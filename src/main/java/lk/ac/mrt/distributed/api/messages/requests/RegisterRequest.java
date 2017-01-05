@@ -1,11 +1,11 @@
 package lk.ac.mrt.distributed.api.messages.requests;
 
-import lk.ac.mrt.distributed.api.messages.Sendable;
+import lk.ac.mrt.distributed.api.messages.Message;
 
 /**
  * @author Chathura Widanage
  */
-public class RegisterRequest implements Sendable {
+public class RegisterRequest implements Message {
     private String ipAddress;
     private int port;
     private String username;

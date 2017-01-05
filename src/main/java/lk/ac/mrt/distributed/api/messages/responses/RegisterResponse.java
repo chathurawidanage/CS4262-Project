@@ -1,14 +1,14 @@
 package lk.ac.mrt.distributed.api.messages.responses;
 
 import lk.ac.mrt.distributed.api.Node;
-import lk.ac.mrt.distributed.api.messages.Sendable;
+import lk.ac.mrt.distributed.api.messages.Message;
 
 import java.util.List;
 
 /**
  * @author Chathura Widanage
  */
-public class RegisterResponse implements Sendable {
+public class RegisterResponse implements Message {
     private int nodesCount;
     private List<Node> nodes;
 

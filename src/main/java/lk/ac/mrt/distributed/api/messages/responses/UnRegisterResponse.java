@@ -1,14 +1,11 @@
 package lk.ac.mrt.distributed.api.messages.responses;
 
-import lk.ac.mrt.distributed.api.Node;
-import lk.ac.mrt.distributed.api.messages.Sendable;
-
-import java.util.List;
+import lk.ac.mrt.distributed.api.messages.Message;
 
 /**
  * @author Chathura Widanage
  */
-public class UnRegisterResponse implements Sendable {
+public class UnRegisterResponse implements Message {
 
     private int value;
 
