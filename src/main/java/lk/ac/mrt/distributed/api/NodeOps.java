@@ -1,5 +1,9 @@
 package lk.ac.mrt.distributed.api;
 
+import lk.ac.mrt.distributed.CommandListener;
+import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
+import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
+import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
 
@@ -8,26 +12,49 @@ import java.util.Set;
 /**
  * @author Chathura Widanage
  */
-public interface NodeOps {
+public abstract class NodeOps {
+
+    protected CommandListener commandListener;
+    protected Node selfNode;
+
+    public void setCommandListener(CommandListener commandListener) {
+        this.commandListener = commandListener;
+    }
+
+    /**
+     * Start server or do anything which initiate communication
+     *
+     */
+    protected abstract void bootstrap() throws BootstrapException;
+
+    /**
+     * Called by the Node to initiate the Node Operations
+     *
+     * @param node {@link Node} instance which acts as the self node
+     */
+    public void start(Node node) throws NullCommandListenerException, BootstrapException {
+        if (this.commandListener == null) {
+            throw new NullCommandListenerException();
+        }
+        this.selfNode = node;
+        bootstrap();
+    }
+
     /**
      * Registers in the network by communicating with the bootstrap server
      *
-     * @param node Node to be registered
-     * @return {@link RegisterResponse} instance
      */
-    RegisterResponse register(Node node);
+    public abstract RegisterResponse register() throws CommunicationException;
 
     /**
      * Unregisters node from the network
      *
-     * @param node
-     * @return
      */
-    UnRegisterResponse unregister(Node node);
+    public abstract UnRegisterResponse unregister() throws CommunicationException;
 
-    void join(Node node, Set<Node> neighbours);
+    public abstract void join(Set<Node> neighbours) throws CommunicationException;
 
-    void leave(Node node, Set<Node> neighbours);
+    public abstract void leave(Set<Node> neighbours) throws CommunicationException;
 
-    void search(Node node, String fileName, Set<Node> neighbours);
+    public abstract void search(String fileName, Set<Node> neighbours) throws CommunicationException;
 }
