@@ -15,6 +15,10 @@ public class UnresgiterRequest extends Message {
         return node;
     }
 
+    public void setNode(Node node) {
+        this.node = node;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -23,10 +27,17 @@ public class UnresgiterRequest extends Message {
         this.username = username;
     }
 
+    public static UnresgiterRequest generate(String ipAddress, int port, String username) {
+        UnresgiterRequest unRegisterRequest = new UnresgiterRequest();
+        unRegisterRequest.setNode(new Node(ipAddress,port));
+        unRegisterRequest.setUsername(username);
+        return unRegisterRequest;
+    }
+
     public String getSendableString() {
         // length UNREG IP_address port_no username
         Node node = this.getNode();
-        String msg = "UNREG " + node.getIp() + " " + node.getPort() + " " + this.getUsername();
+        String msg = "UNREG " + this.getNode().getIp() + " " + this.getNode().getPort() + " " + this.getUsername();
         return this.getLengthAppenedMessage(msg);
     }
 }
