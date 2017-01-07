@@ -4,6 +4,7 @@ import lk.ac.mrt.distributed.CommandListener;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
+import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
 
@@ -44,7 +45,7 @@ public abstract class NodeOps {
      * Registers in the network by communicating with the bootstrap server
      *
      */
-    public abstract RegisterResponse register() throws CommunicationException;
+    public abstract RegisterResponse register() throws CommunicationException,RegistrationException;
 
     /**
      * Unregisters node from the network

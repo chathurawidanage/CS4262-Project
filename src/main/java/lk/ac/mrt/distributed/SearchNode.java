@@ -5,6 +5,7 @@ import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
+import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
 
@@ -35,7 +36,7 @@ public class SearchNode extends Node implements CommandListener {
     }
 
 
-    public void bootstrap() throws SocketException, UnknownHostException, CommunicationException {
+    public void bootstrap() throws SocketException, UnknownHostException, CommunicationException,RegistrationException {
         //register node
         RegisterResponse registerResponse = nodeOps.register();
         this.neighbours.addAll(registerResponse.getNodes());
