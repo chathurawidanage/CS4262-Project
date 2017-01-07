@@ -7,6 +7,7 @@ import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.BroadcastException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
+import lk.ac.mrt.distributed.api.messages.Message;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
@@ -114,7 +115,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
             if (oldBroadcastable == null || !oldBroadcastable.isBroadcasted()) {//prevent rebroadcasting same message
                 //narrowcasting to all neighbours -> broadcasting to whole network
                 for (Node n : neighbours) {
-                    this.send(n, broadcastable.getBroadcastMessage().getBytes());
+                    this.send(n, broadcastable);
                 }
                 oldBroadcastable.setBroadcasted();
                 broadcastableCache.put(broadcastable.getMessageId(), broadcastable);
@@ -175,14 +176,14 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     statusCode = this.commandListener.onLeaveRequest(leaveRequest);
                     LeaveResponse leaveResponse = new LeaveResponse();
                     leaveResponse.setValue(statusCode);
-                    send(leaveRequest.getNode(), leaveResponse.getSendableString().getBytes());
+                    send(leaveRequest.getNode(), leaveResponse);
                     break;
                 case "JOIN":
                     JoinRequest joinRequest = JoinRequest.parse(msg);
                     statusCode = this.commandListener.onJoinRequest(joinRequest);
                     JoinResponse joinResponse = new JoinResponse();
                     joinResponse.setValue(statusCode);
-                    send(joinRequest.getNode(), joinResponse.getSendableString().getBytes());
+                    send(joinRequest.getNode(), joinResponse);
                     break;//todo LEAVEOK, JOINOK
                 case "MEMASTER":
                     MasterBroadcast masterBroadcast = MasterBroadcast.parse(msg);
@@ -199,20 +200,23 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         }
     }
 
-
-    public void send(Node node, byte[] msg) throws IOException {
+    public void send(Node node, Message msg) throws IOException {
         send(node.getIp(), node.getPort(), msg);
     }
 
-    public void send(String ip, int port, byte[] msg) throws IOException {
-        send(InetAddress.getByName(ip), port, msg);
+    public void send(String ip, int port, Message msg) throws IOException {
+        send(InetAddress.getByName(ip), port, msg.getSendableString().getBytes());
     }
 
-    public void send(InetAddress inetAddress, int port, byte[] msg) throws IOException {
-        DatagramPacket datagramPacket = new DatagramPacket(msg, msg.length);
+    public void send(Node node, Broadcastable broadcastable) throws IOException {
+        send(InetAddress.getByName(node.getIp()), node.getPort(), broadcastable.getBroadcastMessage().getBytes());
+    }
+
+    public void send(InetAddress inetAddress, int port, byte[] msgBuffer) throws IOException {
+        DatagramPacket datagramPacket = new DatagramPacket(msgBuffer, msgBuffer.length);
         datagramPacket.setAddress(inetAddress);
         datagramPacket.setPort(port);
-        logger.info("Sending message '{}' to {}:{}", new String(msg), inetAddress.getHostName(), port);
+        logger.info("Sending message '{}' to {}:{}", new String(msgBuffer), inetAddress.getHostName(), port);
         socket.send(datagramPacket);
     }
 }
