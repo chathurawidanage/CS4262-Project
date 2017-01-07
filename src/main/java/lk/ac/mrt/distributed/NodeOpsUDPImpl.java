@@ -98,7 +98,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
             buffer = new byte[65536];
             datagramPacket = new DatagramPacket(buffer, buffer.length);
             try {
-                logger.info("Waiting...");
+                logger.info("Waiting for a message...");
                 socket.receive(datagramPacket);
                 logger.info("New data packet received from {} {}. Data :  {}", datagramPacket.getAddress().toString(),
                         datagramPacket.getPort(),
@@ -161,6 +161,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         DatagramPacket datagramPacket = new DatagramPacket(msg, msg.length);
         datagramPacket.setAddress(inetAddress);
         datagramPacket.setPort(port);
+        logger.info("Sending message '{}' to {}:{}",new String(msg),inetAddress.getHostName(),port);
         socket.send(datagramPacket);
     }
 }

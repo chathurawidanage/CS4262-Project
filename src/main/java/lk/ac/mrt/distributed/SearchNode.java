@@ -23,11 +23,10 @@ public class SearchNode extends Node implements CommandListener {
     private final static Logger logger = LogManager.getLogger(SearchNode.class);
 
     private Set<Node> neighbours;
-    private Map<String, Node> masters;
-    private Map<String, List<Node>> resourceProviders;
+    private Map<String, Node> masters;//Some one else is master for these words
+    private Map<String, List<Node>> resourceProviders;//I am master for these words
 
     private NodeOps nodeOps;
-
 
     public SearchNode(String username, String myIp, int myPort, NodeOps nodeOps) throws SocketException, NullCommandListenerException, BootstrapException {
         super(myIp, myPort);
