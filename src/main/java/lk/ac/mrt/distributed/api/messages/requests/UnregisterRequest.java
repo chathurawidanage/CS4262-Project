@@ -6,7 +6,7 @@ import lk.ac.mrt.distributed.api.messages.Message;
 /**
  * @author Chathura Widanage
  */
-public class UnresgiterRequest extends Message {
+public class UnregisterRequest extends Message {
 
     private Node node;
     private String username;
@@ -27,8 +27,8 @@ public class UnresgiterRequest extends Message {
         this.username = username;
     }
 
-    public static UnresgiterRequest generate(String ipAddress, int port, String username) {
-        UnresgiterRequest unRegisterRequest = new UnresgiterRequest();
+    public static UnregisterRequest generate(String ipAddress, int port, String username) {
+        UnregisterRequest unRegisterRequest = new UnregisterRequest();
         unRegisterRequest.setNode(new Node(ipAddress,port));
         unRegisterRequest.setUsername(username);
         return unRegisterRequest;

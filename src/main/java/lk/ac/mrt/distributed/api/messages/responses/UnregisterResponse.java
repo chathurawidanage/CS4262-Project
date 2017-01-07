@@ -5,7 +5,7 @@ import lk.ac.mrt.distributed.api.messages.Message;
 /**
  * @author Chathura Widanage
  */
-public class UnRegisterResponse extends Message {
+public class UnregisterResponse extends Message {
 
     private int value;
 
@@ -17,12 +17,12 @@ public class UnRegisterResponse extends Message {
         this.value = value;
     }
 
-    public static UnRegisterResponse parse(String msg){
+    public static UnregisterResponse parse(String msg){
         //todo parse registser response
         return null;
     }
 
-    public static UnRegisterResponse generate(int value){
+    public static UnregisterResponse generate(int value){
         //todo implementation
         return null;
     }

@@ -15,7 +15,7 @@ import lk.ac.mrt.distributed.api.messages.requests.RegisterRequest;
 import lk.ac.mrt.distributed.api.messages.responses.JoinResponse;
 import lk.ac.mrt.distributed.api.messages.responses.LeaveResponse;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
-import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
+import lk.ac.mrt.distributed.api.messages.responses.UnregisterResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cache2k.Cache;
@@ -87,7 +87,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
-    public UnRegisterResponse unregister() {
+    public UnregisterResponse unregister() {
         return null;
     }
 
