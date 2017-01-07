@@ -9,10 +9,19 @@ import java.util.Map;
 public class Node {
     protected int port;
     protected String ip;
+    protected String username;
 
     public Node(String ip, int port) {
         this.ip = ip;
         this.port = port;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public int getPort() {
