@@ -1,5 +1,6 @@
 package lk.ac.mrt.distributed.api.messages.requests;
 
+import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.messages.Message;
 
 import java.util.StringTokenizer;
@@ -8,24 +9,14 @@ import java.util.StringTokenizer;
  * @author Chathura Widanage
  */
 public class RegisterRequest extends Message {
-    private String ipAddress;
-    private int port;
+    private Node node;
     private String username;
-
-    public String getIpAddress() {
-        return ipAddress;
+    public Node getNode() {
+        return node;
     }
 
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
+    public void setNode(Node node) {
+        this.node = node;
     }
 
     public String getUsername() {
@@ -49,14 +40,13 @@ public class RegisterRequest extends Message {
 
     public static RegisterRequest generate(String ipAddress, int port, String username) {
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setIpAddress(ipAddress);
-        registerRequest.setPort(port);
+        registerRequest.setNode(new Node(ipAddress,port));
         registerRequest.setUsername(username);
         return registerRequest;
     }
 
     public String getSendableString() {
-        String msg = "REG " + this.getIpAddress() + " " + this.getPort() + " " + this.getUsername();
+        String msg = "REG " + this.getNode().getIp() + " " + this.getNode().getPort() + " " + this.getUsername();
         return this.getLengthAppenedMessage(msg);
     }
 }
