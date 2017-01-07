@@ -14,5 +14,5 @@ public interface CommandListener {
 
     int onJoinRequest(JoinRequest joinRequest);
 
-    void onMasterBoradcast(MasterBroadcast masterBroadcast);
+    void onMasterBroadcast(MasterBroadcast masterBroadcast);
 }

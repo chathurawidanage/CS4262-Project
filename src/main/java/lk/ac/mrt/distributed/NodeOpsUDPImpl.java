@@ -25,7 +25,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
@@ -178,7 +177,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     break;//todo LEAVEOK, JOINOK
                 case "MEMASTER":
                     MasterBroadcast masterBroadcast = MasterBroadcast.parse(msg);
-                    commandListener.onMasterBoradcast(masterBroadcast);
+                    commandListener.onMasterBroadcast(masterBroadcast);
                     break;
             }
         } catch (Exception ex) {//todo make this better

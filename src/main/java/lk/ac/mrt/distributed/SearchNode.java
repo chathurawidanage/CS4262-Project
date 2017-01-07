@@ -83,7 +83,7 @@ public class SearchNode extends Node implements CommandListener {
     }
 
     @Override
-    public void onMasterBoradcast(MasterBroadcast masterBroadcast) {
+    public void onMasterBroadcast(MasterBroadcast masterBroadcast) {
         Node node = masterBroadcast.getNode();
         List<String> words = masterBroadcast.getWordsList();
         for (String word : words) {
