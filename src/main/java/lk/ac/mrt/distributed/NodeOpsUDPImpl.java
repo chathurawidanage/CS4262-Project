@@ -1,10 +1,13 @@
 package lk.ac.mrt.distributed;
 
+import lk.ac.mrt.distributed.api.Broadcastable;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
+import lk.ac.mrt.distributed.api.exceptions.BroadcastException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
+import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.requests.RegisterRequest;
@@ -14,14 +17,18 @@ import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cache2k.Cache;
+import org.cache2k.Cache2kBuilder;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 /**
  * UDP implementation of node operations
@@ -38,8 +45,17 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     //RequestResponse Latches
     private UDPRequestResponseHandler registerRequestResponseHolder;
 
+    private Cache<String, Broadcastable> broadcastableCache;
+
     public NodeOpsUDPImpl(String bootstrapServerIp, int bootstrapServerPort) {
         this.bootstrapServer = new Node(bootstrapServerIp, bootstrapServerPort);
+
+        this.broadcastableCache = new Cache2kBuilder<String, Broadcastable>() {
+        }
+                .name("broadcastables")
+                .eternal(false)
+                .expireAfterWrite(1, TimeUnit.DAYS)
+                .entryCapacity(10000).build();
     }
 
     @Override
@@ -88,6 +104,24 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     @Override
     public void search(String fileName, Set<Node> neighbours) {
 
+    }
+
+    @Override
+    public void broadcast(Broadcastable broadcastable, Set<Node> neighbours) throws BroadcastException {
+        Broadcastable oldBroadcastable = broadcastableCache.get(broadcastable.getMessageId());
+        try {
+            if (oldBroadcastable == null || !oldBroadcastable.isBroadcasted()) {
+                //narrowcasting to all neighbours -> broadcasting to whole network
+                for (Node n : neighbours) {
+                    this.send(n, broadcastable.getBroadcastMessage().getBytes());
+                }
+                oldBroadcastable.setBroadcasted();
+                broadcastableCache.put(broadcastable.getMessageId(), broadcastable);
+            }
+        } catch (IOException ex) {
+            logger.error("Failed to broadcast '{}'", broadcastable.getBroadcastMessage(), ex);
+            throw new BroadcastException();
+        }
     }
 
     @Override
@@ -141,6 +175,10 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     JoinResponse joinResponse = new JoinResponse();
                     joinResponse.setValue(statusCode);
                     send(joinRequest.getNode(), joinResponse.getSendableString().getBytes());
+                    break;//todo LEAVEOK, JOINOK
+                case "MEMASTER":
+                    MasterBroadcast masterBroadcast = MasterBroadcast.parse(msg);
+                    commandListener.onMasterBoradcast(masterBroadcast);
                     break;
             }
         } catch (Exception ex) {//todo make this better
@@ -148,6 +186,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
             logger.error("Error in executing received message", ex);
         }
     }
+
 
     public void send(Node node, byte[] msg) throws IOException {
         send(node.getIp(), node.getPort(), msg);
@@ -161,7 +200,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         DatagramPacket datagramPacket = new DatagramPacket(msg, msg.length);
         datagramPacket.setAddress(inetAddress);
         datagramPacket.setPort(port);
-        logger.info("Sending message '{}' to {}:{}",new String(msg),inetAddress.getHostName(),port);
+        logger.info("Sending message '{}' to {}:{}", new String(msg), inetAddress.getHostName(), port);
         socket.send(datagramPacket);
     }
 }

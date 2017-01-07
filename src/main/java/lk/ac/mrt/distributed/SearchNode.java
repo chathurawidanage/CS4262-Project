@@ -4,9 +4,11 @@ import lk.ac.mrt.distributed.api.CommandListener;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
+import lk.ac.mrt.distributed.api.exceptions.BroadcastException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
+import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
@@ -78,5 +80,28 @@ public class SearchNode extends Node implements CommandListener {
             return 0;
         }
         return 9999;
+    }
+
+    @Override
+    public void onMasterBoradcast(MasterBroadcast masterBroadcast) {
+        Node node = masterBroadcast.getNode();
+        List<String> words = masterBroadcast.getWordsList();
+        for (String word : words) {
+            if (this.masters.containsKey(word)) {//possible master conflict
+                Node existingMasterNode = this.masters.get(word);
+                if (!existingMasterNode.equals(node)) {
+                    //todo handle master conflict by sending YOU_NO_MASTER
+                    //best way is to make older one YOUNOMASTER, since current broadcast message of current master is on air
+                }
+            } else {
+                this.masters.put(word, node);
+            }
+        }
+        //send the news to all neighbours
+        try {
+            this.nodeOps.broadcast(masterBroadcast, this.neighbours);
+        } catch (BroadcastException e) {//todo ugly try catch here
+            e.printStackTrace();
+        }
     }
 }
