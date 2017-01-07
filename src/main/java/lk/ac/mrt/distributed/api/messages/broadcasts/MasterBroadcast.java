@@ -1,5 +1,6 @@
 package lk.ac.mrt.distributed.api.messages.broadcasts;
 
+import lk.ac.mrt.distributed.api.Broadcastable;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.messages.Message;
 
@@ -12,10 +13,12 @@ import java.util.StringTokenizer;
  *
  * @author Chathura Widanage
  */
-public class MasterBroadcast extends Message {
+public class MasterBroadcast extends Message implements Broadcastable {
     private String uuid;
     private Node node;
     private List<String> wordsList;
+
+    private boolean broadcasted;//just a flag
 
     public MasterBroadcast(String uuid, Node node) {
         this.uuid = uuid;
@@ -66,5 +69,25 @@ public class MasterBroadcast extends Message {
             msg += word + " ";
         }
         return this.getLengthAppenedMessage(msg.trim());
+    }
+
+    @Override
+    public boolean isBroadcasted() {
+        return broadcasted;
+    }
+
+    @Override
+    public void setBroadcasted() {
+        this.broadcasted = true;
+    }
+
+    @Override
+    public String getMessageId() {
+        return this.getUuid();
+    }
+
+    @Override
+    public String getBroadcastMessage() {
+        return this.getSendableString();
     }
 }
