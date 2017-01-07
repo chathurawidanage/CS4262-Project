@@ -34,7 +34,6 @@ public class JoinRequest extends Message {
 
     @Override
     public String getSendableString() {
-        Node node = this.getNode();
         String msg = "JOIN " + node.getIp() + " " + node.getPort();
         return this.getLengthAppenedMessage(msg);
     }

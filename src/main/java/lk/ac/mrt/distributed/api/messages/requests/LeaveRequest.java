@@ -34,6 +34,7 @@ public class LeaveRequest extends Message {
 
     @Override
     public String getSendableString() {
-        return null;
+        String msg = "LEAVE " + node.getIp() + " " + node.getPort();
+        return this.getLengthAppenedMessage(msg);
     }
 }
