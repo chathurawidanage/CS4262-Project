@@ -1,6 +1,7 @@
 package lk.ac.mrt.distributed.api;
 
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
+import lk.ac.mrt.distributed.api.exceptions.BroadcastException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
@@ -23,7 +24,6 @@ public abstract class NodeOps {
 
     /**
      * Start server or do anything which initiate communication
-     *
      */
     protected abstract void bootstrap() throws BootstrapException;
 
@@ -42,13 +42,11 @@ public abstract class NodeOps {
 
     /**
      * Registers in the network by communicating with the bootstrap server
-     *
      */
-    public abstract RegisterResponse register() throws CommunicationException,RegistrationException;
+    public abstract RegisterResponse register() throws CommunicationException, RegistrationException;
 
     /**
      * Unregisters node from the network
-     *
      */
     public abstract UnRegisterResponse unregister() throws CommunicationException;
 
@@ -57,4 +55,6 @@ public abstract class NodeOps {
     public abstract void leave(Set<Node> neighbours) throws CommunicationException;
 
     public abstract void search(String fileName, Set<Node> neighbours) throws CommunicationException;
+
+    public abstract void broadcast(Broadcastable broadcastable, Set<Node> neighbours) throws BroadcastException;
 }
