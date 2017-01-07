@@ -4,10 +4,13 @@ import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
+import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.Message;
 import lk.ac.mrt.distributed.api.messages.requests.RegisterRequest;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -24,6 +27,8 @@ import java.util.concurrent.CountDownLatch;
  * @author Chathura Widanage
  */
 public class NodeOpsUDPImpl extends NodeOps implements Runnable {
+    private final Logger logger = LogManager.getLogger(NodeOpsUDPImpl.class);
+
     private String bootstrapServerIp;
     private int bootstrapServerPort;
 
@@ -48,14 +53,16 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
-    public RegisterResponse register() throws CommunicationException {
+    public RegisterResponse register() throws CommunicationException, RegistrationException {
         RegisterRequest registerRequest = RegisterRequest.generate(selfNode.getIp(), selfNode.getPort(), selfNode.getUsername());
         try {
             registerRequestResponseHolder = new RequestResponseHolder();
             registerRequestResponseHolder.request = registerRequest;
             send(bootstrapServerIp, bootstrapServerPort, registerRequest.getSendableString().getBytes());
             registerRequestResponseHolder.countDownLatch.await();
-            return (RegisterResponse) registerRequestResponseHolder.response;
+
+            RegisterResponse registerResponse = RegisterResponse.parse(registerRequestResponseHolder.response);
+            return registerResponse;
         } catch (IOException e) {
             e.printStackTrace();
             throw new CommunicationException(e);
@@ -99,11 +106,11 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                 System.out.println(datagramPacket.getAddress().toString() + ":" + datagramPacket.getPort());
 
                 received(datagramPacket);
-/*
+
                 //sending ACK //todo implement
-                send(datagramPacket.getAddress(),
-                        datagramPacket.getPort(), "GOT".getBytes());
-*/
+                /*send(datagramPacket.getAddress(),
+                        datagramPacket.getPort(), "GOT".getBytes());*/
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -118,9 +125,9 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         switch (command) {
             case "REGOK":
                 //handle register response
-                RegisterResponse registerResponse = RegisterResponse.parse(msg);
+                logger.info("Received REGOK with message '{}'", msg);
                 if (this.registerRequestResponseHolder != null) {
-                    registerRequestResponseHolder.response = registerResponse;
+                    registerRequestResponseHolder.response = msg;
                     registerRequestResponseHolder.countDownLatch.countDown();
                 }
                 break;
@@ -141,7 +148,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     private class RequestResponseHolder {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         Message request;
-        Message response;
+        String response;
         //todo add timeout to retry if response doesn't arrive within X seconds
     }
 }
