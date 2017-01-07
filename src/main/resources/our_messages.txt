@@ -1,5 +1,5 @@
-MEMASTER uuid word1 word2 word3 //broadcast you as master
-MENOMASTER uuid word ip_real_master port_real_master //once node realize i am not master, it broadcast this. Other nodes having this as master should update their entries
+MEMASTER uuid ip port word1 word2 word3 //broadcast you as master
+MENOMASTER uuid word ip port ip_real_master port_real_master //once node realize i am not master, it broadcast this. Other nodes having this as master should update their entries
 UNOMASTER word ip_real_master port_real_master //one to one message once a node realize a master conflict
 IHAVE word ip port file_name //by a node directly to master. let master know that I have a file name having the word
 YOUBEMASTER word ip1 port1 file_name1 ip1 port1 filename2// when master leave, transfer his master ship, after this MENOMASTER is sent
