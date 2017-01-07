@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author Chathura Widanage
  */
-public class RegisterResponse implements Message {
+public class RegisterResponse extends Message {
     private int nodesCount;
     private List<Node> nodes;
 

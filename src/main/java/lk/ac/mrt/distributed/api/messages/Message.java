@@ -6,7 +6,7 @@ package lk.ac.mrt.distributed.api.messages;
 public abstract class Message {
     public abstract String getSendableString();
 
-    public static String getLengthAppenedMessage(String message) {
+    protected String getLengthAppenedMessage(String message) {
         return String.format("%04d", message.length() + 5) + " " + message;
     }
 }

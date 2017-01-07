@@ -5,7 +5,7 @@ import lk.ac.mrt.distributed.api.messages.Message;
 /**
  * @author Chathura Widanage
  */
-public class UnRegisterResponse implements Message {
+public class UnRegisterResponse extends Message {
 
     private int value;
 

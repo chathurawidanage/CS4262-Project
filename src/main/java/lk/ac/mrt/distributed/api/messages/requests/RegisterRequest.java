@@ -7,7 +7,7 @@ import java.util.StringTokenizer;
 /**
  * @author Chathura Widanage
  */
-public class RegisterRequest implements Message {
+public class RegisterRequest extends Message {
     private String ipAddress;
     private int port;
     private String username;
@@ -57,7 +57,6 @@ public class RegisterRequest implements Message {
 
     public String getSendableString() {
         String msg = "REG " + this.getIpAddress() + " " + this.getPort() + " " + this.getUsername();
-        msg = msg.length() + 5 + " " + msg;
-        return msg;
+        return this.getLengthAppenedMessage(msg);
     }
 }

@@ -8,7 +8,7 @@ import java.util.StringTokenizer;
 /**
  * @author Chathura Widanage
  */
-public class LeaveRequest implements Message {
+public class LeaveRequest extends Message {
     private Node node;
 
     public Node getNode() {

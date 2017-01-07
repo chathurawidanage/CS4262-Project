@@ -7,7 +7,7 @@ import java.util.StringTokenizer;
 /**
  * @author Chathura Widanage
  */
-public class JoinResponse implements Message {
+public class JoinResponse extends Message {
     private int value;
 
     public int getValue() {
@@ -32,7 +32,6 @@ public class JoinResponse implements Message {
     @Override
     public String getSendableString() {
         String msg = "JOINOK " + this.getValue();
-        msg = msg.length() + 5 + " " + msg;
-        return null;
+        return this.getLengthAppenedMessage(msg);
     }
 }

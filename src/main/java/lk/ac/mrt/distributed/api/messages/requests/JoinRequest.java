@@ -8,7 +8,7 @@ import java.util.StringTokenizer;
 /**
  * @author Chathura Widanage
  */
-public class JoinRequest implements Message {
+public class JoinRequest extends Message {
     private Node node;
 
     public Node getNode() {
@@ -36,7 +36,6 @@ public class JoinRequest implements Message {
     public String getSendableString() {
         Node node = this.getNode();
         String msg = "JOIN " + node.getIp() + " " + node.getPort();
-        msg = String.format("%04d", msg.length() + 5) + " " + msg;
-        return msg;
+        return this.getLengthAppenedMessage(msg);
     }
 }
