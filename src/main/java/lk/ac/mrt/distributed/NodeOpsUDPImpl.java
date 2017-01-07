@@ -8,6 +8,7 @@ import lk.ac.mrt.distributed.api.exceptions.BroadcastException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
+import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.requests.RegisterRequest;
@@ -109,7 +110,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     public void broadcast(Broadcastable broadcastable, Set<Node> neighbours) throws BroadcastException {
         Broadcastable oldBroadcastable = broadcastableCache.get(broadcastable.getMessageId());
         try {
-            if (oldBroadcastable == null || !oldBroadcastable.isBroadcasted()) {
+            if (oldBroadcastable == null || !oldBroadcastable.isBroadcasted()) {//prevent rebroadcasting same message
                 //narrowcasting to all neighbours -> broadcasting to whole network
                 for (Node n : neighbours) {
                     this.send(n, broadcastable.getBroadcastMessage().getBytes());
@@ -178,6 +179,10 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                 case "MEMASTER":
                     MasterBroadcast masterBroadcast = MasterBroadcast.parse(msg);
                     commandListener.onMasterBroadcast(masterBroadcast);
+                    break;
+                case "MENOMASTER":
+                    MasterChangeBroadcast masterChangeBroadcast = MasterChangeBroadcast.parse(msg);
+                    commandListener.onMasterChangeBroadcast(masterChangeBroadcast);
                     break;
             }
         } catch (Exception ex) {//todo make this better

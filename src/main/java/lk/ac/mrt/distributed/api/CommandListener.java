@@ -1,6 +1,7 @@
 package lk.ac.mrt.distributed.api;
 
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
+import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 
@@ -15,4 +16,6 @@ public interface CommandListener {
     int onJoinRequest(JoinRequest joinRequest);
 
     void onMasterBroadcast(MasterBroadcast masterBroadcast);
+
+    void onMasterChangeBroadcast(MasterChangeBroadcast masterChangeBroadcast);
 }

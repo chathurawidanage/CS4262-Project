@@ -9,6 +9,7 @@ import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
+import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
@@ -101,6 +102,23 @@ public class SearchNode extends Node implements CommandListener {
         try {
             this.nodeOps.broadcast(masterBroadcast, this.neighbours);
         } catch (BroadcastException e) {//todo ugly try catch here
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onMasterChangeBroadcast(MasterChangeBroadcast masterChangeBroadcast) {
+        String word = masterChangeBroadcast.getWord();
+        Node newMaster = masterChangeBroadcast.getNewMaster();
+        Node oldMaster = masterChangeBroadcast.getOldMaster();
+        Node currentMaster = masters.get(word);
+        if (currentMaster != null && !currentMaster.equals(oldMaster)) {
+            //todo handle later. There are possible more than 3 masters inside the network. Rare
+        }
+        masters.put(word, newMaster);//just replace the master
+        try {
+            this.nodeOps.broadcast(masterChangeBroadcast, this.neighbours);
+        } catch (BroadcastException e) {//todo ugly try catch
             e.printStackTrace();
         }
     }

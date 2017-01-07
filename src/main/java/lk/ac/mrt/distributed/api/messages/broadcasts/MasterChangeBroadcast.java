@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
  *
  * @author Chathura Widanage
  */
-public class NotTheMasterAnyMoreBroadcast extends Message implements Broadcastable {
+public class MasterChangeBroadcast extends Message implements Broadcastable {
     private String uuid;
     private String word;
     private Node oldMaster;
@@ -19,7 +19,7 @@ public class NotTheMasterAnyMoreBroadcast extends Message implements Broadcastab
 
     private boolean broadcasted;
 
-    public NotTheMasterAnyMoreBroadcast(String uuid, String word, Node oldMaster, Node newMaster) {
+    public MasterChangeBroadcast(String uuid, String word, Node oldMaster, Node newMaster) {
         this.uuid = uuid;
         this.oldMaster = oldMaster;
         this.word = word;
@@ -38,7 +38,7 @@ public class NotTheMasterAnyMoreBroadcast extends Message implements Broadcastab
         return newMaster;
     }
 
-    public static NotTheMasterAnyMoreBroadcast parse(String msg){
+    public static MasterChangeBroadcast parse(String msg){
         StringTokenizer stringTokenizer=new StringTokenizer(msg," ");
         String length=stringTokenizer.nextToken();
         String message=stringTokenizer.nextToken();
@@ -52,9 +52,9 @@ public class NotTheMasterAnyMoreBroadcast extends Message implements Broadcastab
 
         Node oldMaster=new Node(oldMasterIp,oldMasterPort);
         Node newMaster=new Node(newMasterIp,newMasterPort);
-        NotTheMasterAnyMoreBroadcast notTheMasterAnyMoreBroadcast
-                =new NotTheMasterAnyMoreBroadcast(uuid,word,oldMaster,newMaster);
-        return notTheMasterAnyMoreBroadcast;
+        MasterChangeBroadcast masterChangeBroadcast
+                =new MasterChangeBroadcast(uuid,word,oldMaster,newMaster);
+        return masterChangeBroadcast;
     }
 
     @Override

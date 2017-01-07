@@ -22,6 +22,7 @@ public class MasterBroadcast extends Message implements Broadcastable {
 
     public MasterBroadcast(String uuid, Node node) {
         this.uuid = uuid;
+        this.node = node;
     }
 
     public List<String> getWordsList() {
