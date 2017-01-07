@@ -1,13 +1,16 @@
 package lk.ac.mrt.distributed;
 
+import lk.ac.mrt.distributed.api.CommandListener;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
+import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
-import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.*;
 import java.util.*;
@@ -16,6 +19,8 @@ import java.util.*;
  * @author Chathura Widanage
  */
 public class SearchNode extends Node implements CommandListener {
+    private final static Logger logger = LogManager.getLogger(SearchNode.class);
+
     private Set<Node> neighbours;
     private Map<String, Node> masters;
     private Map<String, List<Node>> resourceProviders;
@@ -36,7 +41,7 @@ public class SearchNode extends Node implements CommandListener {
     }
 
 
-    public void bootstrap() throws SocketException, UnknownHostException, CommunicationException,RegistrationException {
+    public void bootstrap() throws SocketException, UnknownHostException, CommunicationException, RegistrationException {
         //register node
         RegisterResponse registerResponse = nodeOps.register();
         this.neighbours.addAll(registerResponse.getNodes());
@@ -44,19 +49,21 @@ public class SearchNode extends Node implements CommandListener {
         this.nodeOps.join(this.neighbours);
     }
 
-    //listening forever
-    //todo move to a different class
-    public void run() {
-
-    }
-
-    private void receive(DatagramPacket datagramPacket) {
-
-    }
-
 
     @Override
     public void onSearchRequest(Node node, String keyword) {
 
+    }
+
+    @Override
+    public int onLeaveRequest(LeaveRequest leaveRequest) {
+        Node node = leaveRequest.getNode();
+        if (node != null) {
+            this.neighbours.remove(leaveRequest.getNode());
+            return 0;
+        } else {//rare case
+            logger.error("Error occurred while leaving node. Node was null in the request");
+            return 9999;
+        }
     }
 }

@@ -1,6 +1,5 @@
 package lk.ac.mrt.distributed.api;
 
-import lk.ac.mrt.distributed.CommandListener;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;

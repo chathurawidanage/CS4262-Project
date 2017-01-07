@@ -6,7 +6,9 @@ import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.Message;
+import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.requests.RegisterRequest;
+import lk.ac.mrt.distributed.api.messages.responses.LeaveResponse;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
 import org.apache.logging.log4j.LogManager;
@@ -100,17 +102,15 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
             buffer = new byte[65536];
             datagramPacket = new DatagramPacket(buffer, buffer.length);
             try {
-                System.out.println("Waiting...");
+                logger.info("Waiting...");
                 socket.receive(datagramPacket);
-                System.out.println(new String(buffer).trim());
-                System.out.println(datagramPacket.getAddress().toString() + ":" + datagramPacket.getPort());
-
+                logger.info("New data packet received from {} {}. Data :  {}", datagramPacket.getAddress().toString(),
+                        datagramPacket.getPort(),
+                        new String(buffer).trim());
                 received(datagramPacket);
-
                 //sending ACK //todo implement
                 /*send(datagramPacket.getAddress(),
                         datagramPacket.getPort(), "GOT".getBytes());*/
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -122,16 +122,31 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
         String length = stringTokenizer.nextToken();
         String command = stringTokenizer.nextToken();
-        switch (command) {
-            case "REGOK":
-                //handle register response
-                logger.info("Received REGOK with message '{}'", msg);
-                if (this.registerRequestResponseHolder != null) {
-                    registerRequestResponseHolder.response = msg;
-                    registerRequestResponseHolder.countDownLatch.countDown();
-                }
-                break;
+        try {
+            switch (command) {
+                case "REGOK":
+                    //handle register response
+                    logger.info("Received REGOK with message '{}'", msg);
+                    if (this.registerRequestResponseHolder != null) {
+                        registerRequestResponseHolder.response = msg;
+                        registerRequestResponseHolder.countDownLatch.countDown();
+                    }
+                    break;
+                case "LEAVE":
+                    LeaveRequest leaveRequest = LeaveRequest.parse(msg);
+                    int code = this.commandListener.onLeaveRequest(leaveRequest);
+                    LeaveResponse leaveResponse = new LeaveResponse();
+                    leaveResponse.setValue(code);
+                    send(leaveRequest.getNode(), leaveResponse.getSendableString().getBytes());
+            }
+        } catch (Exception ex) {//todo make this better
+            //catching any error in order to not harm the while loop
+            logger.error("Error in executing received message", ex);
         }
+    }
+
+    private void send(Node node, byte[] msg) throws IOException {
+        send(node.getIp(), node.getPort(), msg);
     }
 
     private void send(String ip, int port, byte[] msg) throws IOException {
