@@ -7,4 +7,8 @@ public class CommunicationException extends Exception {
     public CommunicationException(Throwable throwable) {
         super(throwable);
     }
+
+    public CommunicationException(String m){
+        super(m);
+    }
 }
