@@ -4,7 +4,6 @@ import lk.ac.mrt.distributed.api.CommandListener;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
-import lk.ac.mrt.distributed.api.exceptions.BroadcastException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
@@ -12,11 +11,13 @@ import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
+import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.net.*;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.*;
 
 /**
@@ -90,9 +91,12 @@ public class SearchNode extends Node implements CommandListener {
         for (String word : words) {
             if (this.masters.containsKey(word)) {//possible master conflict
                 Node existingMasterNode = this.masters.get(word);
-                if (!existingMasterNode.equals(node)) {
-                    //todo handle master conflict by sending YOU_NO_MASTER
-                    //best way is to make older one YOUNOMASTER, since current broadcast message of current master is on air
+                if (!existingMasterNode.equals(node)) {//let the old master know that he  is no longer the master
+                    try {
+                        nodeOps.letFalseMasterKnow(word, existingMasterNode, node);
+                    } catch (CommunicationException e) {//todo ugly try catch
+                        e.printStackTrace();
+                    }//best way is to make older one YOUNOMASTER, since current broadcast message of current master is on air
                 }
             } else {
                 this.masters.put(word, node);
@@ -101,7 +105,7 @@ public class SearchNode extends Node implements CommandListener {
         //send the news to all neighbours
         try {
             this.nodeOps.broadcast(masterBroadcast, this.neighbours);
-        } catch (BroadcastException e) {//todo ugly try catch here
+        } catch (CommunicationException e) {//todo ugly try catch here
             e.printStackTrace();
         }
     }
@@ -118,7 +122,24 @@ public class SearchNode extends Node implements CommandListener {
         masters.put(word, newMaster);//just replace the master
         try {
             this.nodeOps.broadcast(masterChangeBroadcast, this.neighbours);
-        } catch (BroadcastException e) {//todo ugly try catch
+        } catch (CommunicationException e) {//todo ugly try catch
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest) {
+        //todo send my resources to new master
+        resourceProviders.remove(youNoMasterRequest.getWord());
+        masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
+        try {
+            this.nodeOps.changeMasterBroadcast(
+                    youNoMasterRequest.getWord(),
+                    this,
+                    youNoMasterRequest.getNewMaster(),
+                    this.neighbours
+            );
+        } catch (CommunicationException e) {//todo ugly try catch here
             e.printStackTrace();
         }
     }

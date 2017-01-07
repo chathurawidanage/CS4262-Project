@@ -1,7 +1,6 @@
 package lk.ac.mrt.distributed.api;
 
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
-import lk.ac.mrt.distributed.api.exceptions.BroadcastException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
@@ -56,5 +55,16 @@ public abstract class NodeOps {
 
     public abstract void search(String fileName, Set<Node> neighbours) throws CommunicationException;
 
-    public abstract void broadcast(Broadcastable broadcastable, Set<Node> neighbours) throws BroadcastException;
+    public abstract void broadcast(Broadcastable broadcastable, Set<Node> neighbours) throws CommunicationException;
+
+    public abstract void changeMasterBroadcast(String word, Node oldMaster, Node newMaster, Set<Node> toNeighbours) throws CommunicationException;
+
+    /**
+     * Let and older master know that, he is no longer the master. It is his responsibility to
+     * call changeMasterBroadcast when he receive this message
+     * @param word
+     * @param falseMaster
+     * @param newMaster
+     */
+    public abstract void letFalseMasterKnow(String word,Node falseMaster,Node newMaster) throws CommunicationException;
 }
