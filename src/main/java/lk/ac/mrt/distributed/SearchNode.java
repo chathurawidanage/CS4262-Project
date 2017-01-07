@@ -7,6 +7,7 @@ import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
+import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import org.apache.logging.log4j.LogManager;
@@ -45,8 +46,11 @@ public class SearchNode extends Node implements CommandListener {
         //register node
         RegisterResponse registerResponse = nodeOps.register();
         this.neighbours.addAll(registerResponse.getNodes());
+        if (!this.neighbours.isEmpty()) {//let others know I am here
+            this.nodeOps.join(this.neighbours);
+        }
 
-        this.nodeOps.join(this.neighbours);
+        //our architecture specific stuff
     }
 
 
@@ -65,5 +69,15 @@ public class SearchNode extends Node implements CommandListener {
             logger.error("Error occurred while leaving node. Node was null in the request");
             return 9999;
         }
+    }
+
+    @Override
+    public int onJoinRequest(JoinRequest joinRequest) {
+        Node node = joinRequest.getNode();
+        if (node != null) {
+            this.neighbours.add(node);
+            return 0;
+        }
+        return 9999;
     }
 }

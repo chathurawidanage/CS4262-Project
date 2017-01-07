@@ -1,5 +1,6 @@
 package lk.ac.mrt.distributed.api;
 
+import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 
 /**
@@ -9,4 +10,6 @@ public interface CommandListener {
     void onSearchRequest(Node node, String keyword);
 
     int onLeaveRequest(LeaveRequest leaveRequest);
+
+    int onJoinRequest(JoinRequest joinRequest);
 }

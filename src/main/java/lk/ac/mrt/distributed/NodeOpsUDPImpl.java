@@ -5,8 +5,10 @@ import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
+import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.requests.RegisterRequest;
+import lk.ac.mrt.distributed.api.messages.responses.JoinResponse;
 import lk.ac.mrt.distributed.api.messages.responses.LeaveResponse;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
@@ -116,6 +118,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
         String length = stringTokenizer.nextToken();
         String command = stringTokenizer.nextToken();
+        int statusCode = 0;
         try {
             switch (command) {
                 case "REGOK":
@@ -127,12 +130,18 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     break;
                 case "LEAVE":
                     LeaveRequest leaveRequest = LeaveRequest.parse(msg);
-                    int code = this.commandListener.onLeaveRequest(leaveRequest);
+                    statusCode = this.commandListener.onLeaveRequest(leaveRequest);
                     LeaveResponse leaveResponse = new LeaveResponse();
-                    leaveResponse.setValue(code);
+                    leaveResponse.setValue(statusCode);
                     send(leaveRequest.getNode(), leaveResponse.getSendableString().getBytes());
                     break;
-
+                case "JOIN":
+                    JoinRequest joinRequest = JoinRequest.parse(msg);
+                    statusCode = this.commandListener.onJoinRequest(joinRequest);
+                    JoinResponse joinResponse = new JoinResponse();
+                    joinResponse.setValue(statusCode);
+                    send(joinRequest.getNode(), joinResponse.getSendableString().getBytes());
+                    break;
             }
         } catch (Exception ex) {//todo make this better
             //catching any error in order to not harm the while loop
