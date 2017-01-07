@@ -31,6 +31,8 @@ public class JoinResponse implements Message {
 
     @Override
     public String getSendableString() {
+        String msg = "JOINOK " + this.getValue();
+        msg = msg.length() + 5 + " " + msg;
         return null;
     }
 }

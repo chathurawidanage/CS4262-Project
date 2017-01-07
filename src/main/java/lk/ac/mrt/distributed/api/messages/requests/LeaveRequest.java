@@ -8,7 +8,7 @@ import java.util.StringTokenizer;
 /**
  * @author Chathura Widanage
  */
-public class JoinRequest implements Message {
+public class LeaveRequest implements Message {
     private Node node;
 
     public Node getNode() {
@@ -19,7 +19,7 @@ public class JoinRequest implements Message {
         this.node = node;
     }
 
-    public static JoinRequest parse(String msg) {
+    public static LeaveRequest parse(String msg) {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
         String length = stringTokenizer.nextToken();
         String message = stringTokenizer.nextToken();
@@ -27,16 +27,13 @@ public class JoinRequest implements Message {
         Integer port = Integer.parseInt(stringTokenizer.nextToken());
 
         Node node = new Node(ip, port);
-        JoinRequest joinRequest = new JoinRequest();
-        joinRequest.setNode(node);
-        return joinRequest;
+        LeaveRequest leaveRequest = new LeaveRequest();
+        leaveRequest.setNode(node);
+        return leaveRequest;
     }
 
     @Override
     public String getSendableString() {
-        Node node = this.getNode();
-        String msg = "JOIN " + node.getIp() + " " + node.getPort();
-        msg = String.format("%04d", msg.length() + 5) + " " + msg;
-        return msg;
+        return null;
     }
 }

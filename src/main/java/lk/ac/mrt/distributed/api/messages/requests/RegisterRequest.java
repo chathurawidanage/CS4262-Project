@@ -2,6 +2,8 @@ package lk.ac.mrt.distributed.api.messages.requests;
 
 import lk.ac.mrt.distributed.api.messages.Message;
 
+import java.util.StringTokenizer;
+
 /**
  * @author Chathura Widanage
  */
@@ -34,18 +36,28 @@ public class RegisterRequest implements Message {
         this.username = username;
     }
 
-    public static RegisterRequest parse(String msg){
-        //todo parse registser response
+    public static RegisterRequest parse(String msg) {
+        StringTokenizer stringTokenizer=new StringTokenizer(msg," ");
+        String length=stringTokenizer.nextToken();
+        String message=stringTokenizer.nextToken();
+        String ip=stringTokenizer.nextToken();
+        String port=stringTokenizer.nextToken();
+        String username=stringTokenizer.nextToken();
+
         return null;
     }
 
-    public static RegisterRequest generate(String ipAddress,int port,String username){
-        //todo implementation
-        return null;
+    public static RegisterRequest generate(String ipAddress, int port, String username) {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setIpAddress(ipAddress);
+        registerRequest.setPort(port);
+        registerRequest.setUsername(username);
+        return registerRequest;
     }
 
     public String getSendableString() {
-        //todo length REG IP_address port_no username
-        return null;
+        String msg = "REG " + this.getIpAddress() + " " + this.getPort() + " " + this.getUsername();
+        msg = msg.length() + 5 + " " + msg;
+        return msg;
     }
 }
