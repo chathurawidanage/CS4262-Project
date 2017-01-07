@@ -21,7 +21,11 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * UDP implementation of node operations
@@ -31,17 +35,15 @@ import java.util.concurrent.CountDownLatch;
 public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     private final Logger logger = LogManager.getLogger(NodeOpsUDPImpl.class);
 
-    private String bootstrapServerIp;
-    private int bootstrapServerPort;
+    private Node bootstrapServer;
 
     private DatagramSocket socket;
 
     //RequestResponse Latches
-    private RequestResponseHolder registerRequestResponseHolder;
+    private UDPRequestResponseHandler registerRequestResponseHolder;
 
     public NodeOpsUDPImpl(String bootstrapServerIp, int bootstrapServerPort) {
-        this.bootstrapServerIp = bootstrapServerIp;
-        this.bootstrapServerPort = bootstrapServerPort;
+        this.bootstrapServer = new Node(bootstrapServerIp, bootstrapServerPort);
     }
 
     @Override
@@ -58,12 +60,10 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     public RegisterResponse register() throws CommunicationException, RegistrationException {
         RegisterRequest registerRequest = RegisterRequest.generate(selfNode.getIp(), selfNode.getPort(), selfNode.getUsername());
         try {
-            registerRequestResponseHolder = new RequestResponseHolder();
-            registerRequestResponseHolder.request = registerRequest;
-            send(bootstrapServerIp, bootstrapServerPort, registerRequest.getSendableString().getBytes());
-            registerRequestResponseHolder.countDownLatch.await();
-
-            RegisterResponse registerResponse = RegisterResponse.parse(registerRequestResponseHolder.response);
+            registerRequestResponseHolder = new UDPRequestResponseHandler(bootstrapServer, registerRequest, this);
+            registerRequestResponseHolder.send();
+            RegisterResponse registerResponse = RegisterResponse.parse(registerRequestResponseHolder.getResponse());
+            registerRequestResponseHolder = null;
             return registerResponse;
         } catch (IOException e) {
             e.printStackTrace();
@@ -128,8 +128,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     //handle register response
                     logger.info("Received REGOK with message '{}'", msg);
                     if (this.registerRequestResponseHolder != null) {
-                        registerRequestResponseHolder.response = msg;
-                        registerRequestResponseHolder.countDownLatch.countDown();
+                        registerRequestResponseHolder.setResponse(msg);
                     }
                     break;
                 case "LEAVE":
@@ -138,6 +137,8 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     LeaveResponse leaveResponse = new LeaveResponse();
                     leaveResponse.setValue(code);
                     send(leaveRequest.getNode(), leaveResponse.getSendableString().getBytes());
+                    break;
+
             }
         } catch (Exception ex) {//todo make this better
             //catching any error in order to not harm the while loop
@@ -145,25 +146,18 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         }
     }
 
-    private void send(Node node, byte[] msg) throws IOException {
+    public void send(Node node, byte[] msg) throws IOException {
         send(node.getIp(), node.getPort(), msg);
     }
 
-    private void send(String ip, int port, byte[] msg) throws IOException {
+    public void send(String ip, int port, byte[] msg) throws IOException {
         send(InetAddress.getByName(ip), port, msg);
     }
 
-    private void send(InetAddress inetAddress, int port, byte[] msg) throws IOException {
+    public void send(InetAddress inetAddress, int port, byte[] msg) throws IOException {
         DatagramPacket datagramPacket = new DatagramPacket(msg, msg.length);
         datagramPacket.setAddress(inetAddress);
         datagramPacket.setPort(port);
         socket.send(datagramPacket);
-    }
-
-    private class RequestResponseHolder {
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        Message request;
-        String response;
-        //todo add timeout to retry if response doesn't arrive within X seconds
     }
 }
