@@ -1,5 +1,6 @@
 package lk.ac.mrt.distributed.api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,10 +11,20 @@ public class Node {
     protected int port;
     protected String ip;
     protected String username;
+    protected List<String> files;
 
     public Node(String ip, int port) {
         this.ip = ip;
         this.port = port;
+        this.files = new ArrayList<>();
+    }
+
+    public List<String> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<String> files) {
+        this.files = files;
     }
 
     public void setUsername(String username) {
