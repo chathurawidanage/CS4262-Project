@@ -4,7 +4,7 @@ package lk.ac.mrt.distributed.api.messages;
  * @author Chathura Widanage
  */
 public abstract class Message {
-    abstract String getSendableString();
+    public abstract String getSendableString();
 
     public static String getLengthAppenedMessage(String message){
         int length = message.length() + 5;
