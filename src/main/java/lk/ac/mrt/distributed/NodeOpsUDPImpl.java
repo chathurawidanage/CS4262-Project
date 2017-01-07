@@ -99,11 +99,11 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                 System.out.println(datagramPacket.getAddress().toString() + ":" + datagramPacket.getPort());
 
                 received(datagramPacket);
-
+/*
                 //sending ACK //todo implement
                 send(datagramPacket.getAddress(),
                         datagramPacket.getPort(), "GOT".getBytes());
-
+*/
             } catch (IOException e) {
                 e.printStackTrace();
             }
