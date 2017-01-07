@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -122,6 +123,13 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
             logger.error("Failed to broadcast '{}'", broadcastable.getBroadcastMessage(), ex);
             throw new BroadcastException();
         }
+    }
+
+    @Override
+    public void changeMaster(String word, Node oldMaster, Node newMaster, Set<Node> to) throws BroadcastException {
+        MasterChangeBroadcast masterChangeBroadcast =
+                new MasterChangeBroadcast(UUID.randomUUID().toString(), word, oldMaster, newMaster);
+        this.broadcast(masterChangeBroadcast, to);
     }
 
     @Override
