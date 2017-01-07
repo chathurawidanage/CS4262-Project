@@ -57,4 +57,6 @@ public abstract class NodeOps {
     public abstract void search(String fileName, Set<Node> neighbours) throws CommunicationException;
 
     public abstract void broadcast(Broadcastable broadcastable, Set<Node> neighbours) throws BroadcastException;
+
+    public abstract void changeMaster(String word, Node oldMaster, Node newMaster, Set<Node> toNeighbours) throws BroadcastException;
 }
