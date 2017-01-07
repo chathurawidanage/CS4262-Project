@@ -41,6 +41,11 @@ public class Node {
     }
 
     @Override
+    public String toString() {
+        return ip + ":" + port;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj != null && obj instanceof Node) {
             Node comp = (Node) obj;
