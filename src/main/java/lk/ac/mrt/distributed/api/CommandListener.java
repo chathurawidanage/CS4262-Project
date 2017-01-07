@@ -4,6 +4,7 @@ import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
+import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
 
 /**
  * @author Chathura Widanage
@@ -18,4 +19,6 @@ public interface CommandListener {
     void onMasterBroadcast(MasterBroadcast masterBroadcast);
 
     void onMasterChangeBroadcast(MasterChangeBroadcast masterChangeBroadcast);
+
+    void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest);
 }
