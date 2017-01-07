@@ -49,7 +49,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
 
     @Override
     public RegisterResponse register() throws CommunicationException {
-        RegisterRequest registerRequest = RegisterRequest.generate(selfNode.getIp(), selfNode.getPort(), "");
+        RegisterRequest registerRequest = RegisterRequest.generate(selfNode.getIp(), selfNode.getPort(), selfNode.getUsername());
         try {
             registerRequestResponseHolder = new RequestResponseHolder();
             registerRequestResponseHolder.request = registerRequest;

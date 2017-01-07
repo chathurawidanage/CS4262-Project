@@ -22,8 +22,9 @@ public class SearchNode extends Node implements CommandListener {
     private NodeOps nodeOps;
 
 
-    public SearchNode(String myIp, int myPort, NodeOps nodeOps) throws SocketException, NullCommandListenerException, BootstrapException {
+    public SearchNode(String username, String myIp, int myPort, NodeOps nodeOps) throws SocketException, NullCommandListenerException, BootstrapException {
         super(myIp, myPort);
+        this.setUsername(username);
         this.neighbours = new HashSet<>();
         this.masters = new HashMap<>();
         this.resourceProviders = new HashMap<>();
@@ -32,6 +33,7 @@ public class SearchNode extends Node implements CommandListener {
         this.nodeOps.setCommandListener(this);
         this.nodeOps.start(this);
     }
+
 
     public void bootstrap() throws SocketException, UnknownHostException, CommunicationException {
         //register node

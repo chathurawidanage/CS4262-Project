@@ -1,18 +1,43 @@
 package lk.ac.mrt.distributed.api.messages.requests;
 
+import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.messages.Message;
 
 /**
  * @author Chathura Widanage
  */
-public class UnresgiterRequest extends Message{
+public class UnresgiterRequest extends Message {
 
+    private Node node;
+    private String username;
+
+    public Node getNode() {
+        return node;
+    }
+
+    public void setNode(Node node) {
+        this.node = node;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public static UnresgiterRequest generate(String ipAddress, int port, String username) {
+        UnresgiterRequest unRegisterRequest = new UnresgiterRequest();
+        unRegisterRequest.setNode(new Node(ipAddress,port));
+        unRegisterRequest.setUsername(username);
+        return unRegisterRequest;
+    }
 
     public String getSendableString() {
         // length UNREG IP_address port_no username
-
-        //0028 UNREG 64.12.123.190 432
-        //String unregMessage = "UNREG "
-        return null;
+        Node node = this.getNode();
+        String msg = "UNREG " + this.getNode().getIp() + " " + this.getNode().getPort() + " " + this.getUsername();
+        return this.getLengthAppenedMessage(msg);
     }
 }
