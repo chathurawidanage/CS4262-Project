@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * word ip1 port1 csv_filenames1 ip2 port2 csv_filenames2
+ * word ip1 port1 filename1 ip2 port2 filename2
  * Created by pubudu on 1/7/17.
  */
 public class ProvidersResponse extends Message {

@@ -23,4 +23,8 @@ public interface CommandListener {
     void onMasterWhoRequest(MasterWhoRequest masterWhoRequest);
 
     void onProvidersRequest(ProvidersRequest providersRequest);
+
+    void onTakeMyGemsRequest(TakeMyGemsRequest takeMyGemsRequest);
+
+    void onIHaveRequest(IHaveRequest iHaveRequest);
 }

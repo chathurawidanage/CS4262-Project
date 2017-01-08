@@ -23,7 +23,7 @@ public class BootstrapTest extends TestCase {
             }
         })).start();
 
-        Thread.sleep(200);
+        Thread.sleep(5000);
         System.out.println("Starting node 1");
         NodeOpsUDPImpl node1OpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
         final SearchNode searchNode1 = new SearchNode("NODE1", "127.0.0.1", 44446, node1OpsUDP);
@@ -37,7 +37,7 @@ public class BootstrapTest extends TestCase {
 
 
 
-        Thread.sleep(200);
+        Thread.sleep(5000);
         NodeOpsUDPImpl node2OpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
         final SearchNode searchNode2 = new SearchNode("NODE2", "127.0.0.1", 44447, node2OpsUDP);
         searchNode2.bootstrap();
@@ -49,7 +49,7 @@ public class BootstrapTest extends TestCase {
             }
         });
 
-        Thread.sleep(200);
+     /*   Thread.sleep(10000);
         NodeOpsUDPImpl node3OpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
         final SearchNode searchNode3 = new SearchNode("NODE3", "127.0.0.1", 44448, node3OpsUDP);
         searchNode3.bootstrap();
@@ -60,7 +60,7 @@ public class BootstrapTest extends TestCase {
                 nc1.display();
             }
         });
-
+*/
         Scanner sc = new Scanner(System.in);
         System.out.println("Press enter to exit");
         sc.nextByte();

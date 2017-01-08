@@ -38,6 +38,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     private UDPRequestResponseHandler unregisterRequestResponseHandler;
     private UDPRequestResponseHandler masterRequestResponseHandler;
     private UDPRequestResponseHandler providerRequestResponseHandler;
+    private UDPRequestResponseHandler transferOwnershipRequestResponseHandler;
 
     private Cache<String, Broadcastable> broadcastableCache;
 
@@ -210,6 +211,27 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
+    public boolean transferResourceOwnership(String word, Node newMaster, List<Node> providers) throws CommunicationException {
+        TakeMyGemsRequest takeMyGemsRequest = new TakeMyGemsRequest();
+        takeMyGemsRequest.setWord(word);
+        takeMyGemsRequest.setProviders(providers);
+        takeMyGemsRequest.setOldMaster(selfNode);
+        this.transferOwnershipRequestResponseHandler = new UDPRequestResponseHandler(newMaster, takeMyGemsRequest, this);
+        try {
+            this.transferOwnershipRequestResponseHandler.send();
+            return true;
+        } catch (InterruptedException e) {
+            throw new CommunicationException(e);
+        }
+    }
+
+    @Override
+    public void sendOwnershipTaken(Node oldMaster) throws CommunicationException {
+        TakeMyGemsResponse takeMyGemsResponse = new TakeMyGemsResponse();
+        this.send(oldMaster, takeMyGemsResponse);
+    }
+
+    @Override
     public void run() {
         byte buffer[];
         DatagramPacket datagramPacket;
@@ -294,6 +316,19 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     if (this.providerRequestResponseHandler != null) {
                         this.providerRequestResponseHandler.setResponse(msg);
                     }
+                    break;
+                case "TAKEMYGEMS":
+                    TakeMyGemsRequest takeMyGemsRequest = TakeMyGemsRequest.parse(msg);
+                    this.commandListener.onTakeMyGemsRequest(takeMyGemsRequest);
+                    break;
+                case "TAKEMYGEMSOK":
+                    if (this.transferOwnershipRequestResponseHandler != null) {
+                        this.transferOwnershipRequestResponseHandler.setResponse(msg);
+                    }
+                    break;
+                case "IHAVE":
+                    IHaveRequest iHaveRequest = IHaveRequest.parse(msg);
+                    this.commandListener.onIHaveRequest(iHaveRequest);
                     break;
             }
         } catch (Exception ex) {//todo make this better

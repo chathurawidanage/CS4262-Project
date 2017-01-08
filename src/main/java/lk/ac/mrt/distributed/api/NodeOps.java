@@ -93,4 +93,8 @@ public abstract class NodeOps {
     public abstract List<Node> getProvidersForWord(String word,Node masterNode) throws CommunicationException;
 
     public abstract void sendProviders(Node to,String word,List<Node> providers) throws CommunicationException;
+
+    public abstract boolean transferResourceOwnership(String word,Node newMaster,List<Node> providers) throws CommunicationException;
+
+    public abstract void sendOwnershipTaken(Node oldMaster) throws CommunicationException;
 }

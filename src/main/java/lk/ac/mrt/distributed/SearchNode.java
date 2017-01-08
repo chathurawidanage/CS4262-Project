@@ -27,7 +27,7 @@ public class SearchNode extends Node implements CommandListener {
 
     private Set<Node> neighbours;
     private Map<String, Node> masters;//Some one else is master for these words
-    private Map<String, List<Node>> resourceProviders;//I am master for these words
+    private Map<String, Set<Node>> resourceProviders;//I am master for these words
 
     private NodeOps nodeOps;
 
@@ -104,7 +104,7 @@ public class SearchNode extends Node implements CommandListener {
         Set<String> fileTokens = invertedFileIndex.keySet(); //the file tokens of all the files that i hold
         ArrayList<String> filesList = new ArrayList<>();
         ArrayList<String> iAmMasterFileTokens = new ArrayList<>();
-        List<Node> resoureceEndpoints;
+        Set<Node> resoureceEndpoints;
 
         for (String fileToken : fileTokens) {
             if (masters.containsKey(fileToken)) {
@@ -117,9 +117,10 @@ public class SearchNode extends Node implements CommandListener {
                 }
             } else {
                 iAmMasterFileTokens.add(fileToken);
+                this.masters.put(fileToken, this);//set me as master
                 resoureceEndpoints = this.resourceProviders.get(fileToken);
                 if (resoureceEndpoints == null) {
-                    resoureceEndpoints = new ArrayList();
+                    resoureceEndpoints = new HashSet<>();
                     this.resourceProviders.put(fileToken, resoureceEndpoints);
                 }
                 resoureceEndpoints.add(this);
@@ -170,7 +171,13 @@ public class SearchNode extends Node implements CommandListener {
                 Node existingMasterNode = this.masters.get(word);
                 if (!existingMasterNode.equals(node)) {//let the old master know that he  is no longer the master
                     try {
-                        nodeOps.letFalseMasterKnow(word, existingMasterNode, node);
+                        if (existingMasterNode.equals(this)) {//if this node is the old master
+                            YouNoMasterRequest youNoMasterRequest =
+                                    new YouNoMasterRequest(word, node);
+                            this.onYouNoMasterRequest(youNoMasterRequest);
+                        } else {
+                            nodeOps.letFalseMasterKnow(word, existingMasterNode, node);
+                        }
                     } catch (CommunicationException e) {//todo ugly try catch
                         e.printStackTrace();
                     }//best way is to make older one YOUNOMASTER, since current broadcast message of current master is on air
@@ -206,7 +213,20 @@ public class SearchNode extends Node implements CommandListener {
 
     @Override
     public void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest) {
-        //todo send my resources to new master
+        if(youNoMasterRequest.getNewMaster().equals(this)){
+            System.out.println("SHIT HAS HAPPENED");
+            return;
+        }
+        //sending my resources to new master
+        try {
+            boolean transfered = this.nodeOps.transferResourceOwnership(
+                    youNoMasterRequest.getWord(),
+                    youNoMasterRequest.getNewMaster(),
+                    new ArrayList<Node>(this.resourceProviders.get(youNoMasterRequest.getWord()))
+            );
+        } catch (CommunicationException e) {
+            e.printStackTrace();
+        }
         resourceProviders.remove(youNoMasterRequest.getWord());
         masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
         try {
@@ -235,16 +255,47 @@ public class SearchNode extends Node implements CommandListener {
     public void onProvidersRequest(ProvidersRequest providersRequest) {
         String word = providersRequest.getWord();
         Node requestingNode = providersRequest.getNode();
-        List<Node> providers = this.resourceProviders.get(word);
+        Set<Node> providers = this.resourceProviders.get(word);
         try {
             if (providers == null) {
                 logger.warn("Null provider request. Possible error in protocol");
-                providers = new ArrayList<>();
+                providers = new HashSet<>();
             }
-            this.nodeOps.sendProviders(requestingNode, word, providers);
+            this.nodeOps.sendProviders(requestingNode, word, new ArrayList<>(providers));
         } catch (CommunicationException e) {//todo ugly try catch
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onTakeMyGemsRequest(TakeMyGemsRequest takeMyGemsRequest) {
+        String word = takeMyGemsRequest.getWord();
+        List<Node> providers = takeMyGemsRequest.getProviders();
+        Set<Node> nodes = this.resourceProviders.get(word);
+        if (nodes == null) {
+            nodes = new HashSet<>();
+            this.resourceProviders.put(word, nodes);
+        }
+        nodes.addAll(providers);
+        try {
+            this.nodeOps.sendOwnershipTaken(takeMyGemsRequest.getOldMaster());
+        } catch (CommunicationException e) {//todo ugly try catch
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onIHaveRequest(IHaveRequest iHaveRequest) {
+        String word = iHaveRequest.getWord();
+        Node node = iHaveRequest.getNode();
+        List<String> fileNames = iHaveRequest.getFileNames();
+        node.setFiles(fileNames);
+        Set<Node> nodes = this.resourceProviders.get(word);
+        if (nodes == null) {
+            nodes = new HashSet<>();
+            this.resourceProviders.put(word, nodes);
+        }
+        nodes.add(node);
     }
 
     public List<Pair<String, Node>> search(String query) {
@@ -301,6 +352,8 @@ public class SearchNode extends Node implements CommandListener {
                 } catch (CommunicationException e) {//todo ugly try catch
                     e.printStackTrace();
                 }
+            }else{
+                this.masters.put(word,master);
             }
         }
     }
