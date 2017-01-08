@@ -185,8 +185,10 @@ public class NodeGUIConsole {
     }
 
     private void populateSearchResult(List<Pair<String, Node>> resourceLocations) {
-        for (int i = 0;i < searchData.getRowCount();i++)
-            searchData.removeRow(i);
+        while(searchData.getRowCount()!=0){
+            searchData.removeRow(0);
+        }
+
         for (Pair<String, Node> entry :
                 resourceLocations) {
             searchData.addRow(new Object[]{entry.getKey(), entry.getValue()});
