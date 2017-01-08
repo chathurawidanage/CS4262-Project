@@ -65,8 +65,8 @@ public class UDPRequestResponseHandler {
                         logger.info("Retrying '{}' to {}. {} of {} time", request.getSendableString(), recipient.toString(), retryCount + 1, retires);
                         retryCount++;
                         try {
-                            udp.send(recipient, request.getSendableString().getBytes());
-                        } catch (IOException e) {
+                            udp.send(recipient, request);
+                        } catch (CommunicationException e) {
                             logger.error("Retrying failed", e);
                         }
                     } else {
@@ -87,8 +87,8 @@ public class UDPRequestResponseHandler {
         this(recipient, request, udp, 3, 10000);
     }
 
-    public void send() throws IOException, InterruptedException, CommunicationException {
-        udp.send(recipient, request.getSendableString().getBytes());
+    public void send() throws CommunicationException, InterruptedException {
+        udp.send(recipient, request);
         this.countDownLatch.await();
         if (failed.get()) {
             throw new CommunicationException("Request timeout");

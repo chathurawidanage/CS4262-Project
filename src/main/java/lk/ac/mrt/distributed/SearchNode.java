@@ -56,6 +56,10 @@ public class SearchNode extends Node implements CommandListener {
         }
 
         //our architecture specific stuff
+        for(Node neigh:neighbours){
+            Map<String, Node> newMasters = this.nodeOps.askForMasters(neigh);
+            this.mergeNewMasters(newMasters);
+        }
     }
 
 
@@ -156,19 +160,22 @@ public class SearchNode extends Node implements CommandListener {
         }
     }
 
-    @Override
-    public void onMasterWhoResponse(MasterWhoResponse masterWhoResponse) {
-        Map<String, Node> newMasters = masterWhoResponse.getMasters();
+    /**
+     * Will be used by node it self to carefully merge existing masters and
+     * handle conflicts and let false master know about the conflicts
+     * @param newMasters
+     */
+    private void mergeNewMasters(Map<String, Node> newMasters) {
         Iterator<String> wordsIterator = newMasters.keySet().iterator();
-        while(wordsIterator.hasNext()){
-            String word=wordsIterator.next();
-            Node master=newMasters.get(word);
-            if(this.masters.containsKey(word) && !this.masters.get(word).equals(master)){//conflict
-                Node oldMaster=this.masters.get(word);
-                this.masters.put(word,master);
+        while (wordsIterator.hasNext()) {
+            String word = wordsIterator.next();
+            Node master = newMasters.get(word);
+            if (this.masters.containsKey(word) && !this.masters.get(word).equals(master)) {//conflict
+                Node oldMaster = this.masters.get(word);
+                this.masters.put(word, master);
                 //let false master know he is no longer the master
                 try {
-                    this.nodeOps.letFalseMasterKnow(word,oldMaster,master);
+                    this.nodeOps.letFalseMasterKnow(word, oldMaster, master);
                 } catch (CommunicationException e) {//todo ugly try catch
                     e.printStackTrace();
                 }

@@ -7,6 +7,7 @@ import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnregisterResponse;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -62,9 +63,19 @@ public abstract class NodeOps {
     /**
      * Let and older master know that, he is no longer the master. It is his responsibility to
      * call changeMasterBroadcast when he receive this message
+     *
      * @param word
      * @param falseMaster
      * @param newMaster
      */
-    public abstract void letFalseMasterKnow(String word,Node falseMaster,Node newMaster) throws CommunicationException;
+    public abstract void letFalseMasterKnow(String word, Node falseMaster, Node newMaster) throws CommunicationException;
+
+    /**
+     * Deliberately asking only from one to simplify things
+     * @param neighbours
+     * @throws CommunicationException
+     */
+    public abstract Map<String,Node> askForMasters(Node neighbours) throws CommunicationException;
+
+    public abstract void sendMasters(Node to, Map<String, Node> masters) throws CommunicationException;
 }

@@ -9,14 +9,8 @@ import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.Message;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
-import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
-import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
-import lk.ac.mrt.distributed.api.messages.requests.RegisterRequest;
-import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
-import lk.ac.mrt.distributed.api.messages.responses.JoinResponse;
-import lk.ac.mrt.distributed.api.messages.responses.LeaveResponse;
-import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
-import lk.ac.mrt.distributed.api.messages.responses.UnregisterResponse;
+import lk.ac.mrt.distributed.api.messages.requests.*;
+import lk.ac.mrt.distributed.api.messages.responses.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cache2k.Cache;
@@ -24,9 +18,7 @@ import org.cache2k.Cache2kBuilder;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,8 +33,9 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
 
     private DatagramSocket socket;
 
-    //RequestResponse Latches
-    private UDPRequestResponseHandler registerRequestResponseHolder;
+    //RequestResponse Handlers
+    private UDPRequestResponseHandler registerRequestResponseHandler;
+    private UDPRequestResponseHandler masterRequestResponseHandler;
 
     private Cache<String, Broadcastable> broadcastableCache;
 
@@ -71,14 +64,11 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     public RegisterResponse register() throws CommunicationException, RegistrationException {
         RegisterRequest registerRequest = RegisterRequest.generate(selfNode.getIp(), selfNode.getPort(), selfNode.getUsername());
         try {
-            registerRequestResponseHolder = new UDPRequestResponseHandler(bootstrapServer, registerRequest, this);
-            registerRequestResponseHolder.send();
-            RegisterResponse registerResponse = RegisterResponse.parse(registerRequestResponseHolder.getResponse());
-            registerRequestResponseHolder = null;
+            registerRequestResponseHandler = new UDPRequestResponseHandler(bootstrapServer, registerRequest, this);
+            registerRequestResponseHandler.send();
+            RegisterResponse registerResponse = RegisterResponse.parse(registerRequestResponseHandler.getResponse());
+            registerRequestResponseHandler = null;
             return registerResponse;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new CommunicationException(e);
         } catch (InterruptedException e) {
             e.printStackTrace();
             throw new CommunicationException(e);
@@ -132,6 +122,31 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
+    public Map<String, Node> askForMasters(Node neighbour) throws CommunicationException {
+        logger.info("Asking for masters from {}", neighbour.toString());
+        MasterWhoRequest masterWhoRequest = new MasterWhoRequest();
+        masterWhoRequest.setNode(selfNode);
+        this.masterRequestResponseHandler = new UDPRequestResponseHandler(neighbour, masterWhoRequest, this);
+        try {
+            this.masterRequestResponseHandler.send();
+            String response = this.masterRequestResponseHandler.getResponse();
+            MasterWhoResponse masterWhoResponse = MasterWhoResponse.parse(response);
+            this.masterRequestResponseHandler = null;
+            return masterWhoResponse.getMasters();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new CommunicationException(e);
+        }
+    }
+
+    @Override
+    public void sendMasters(Node to, Map<String, Node> masters) throws CommunicationException {
+        MasterWhoResponse masterWhoResponse = new MasterWhoResponse();
+        masterWhoResponse.setMasters(masters);
+        this.send(to, masterWhoResponse);
+    }
+
+    @Override
     public void run() {
         byte buffer[];
         DatagramPacket datagramPacket;
@@ -165,8 +180,8 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                 case "REGOK":
                     //handle register response
                     logger.info("Received REGOK with message '{}'", msg);
-                    if (this.registerRequestResponseHolder != null) {
-                        registerRequestResponseHolder.setResponse(msg);
+                    if (this.registerRequestResponseHandler != null) {
+                        registerRequestResponseHandler.setResponse(msg);
                     }
                     break;
                 case "LEAVE":
@@ -194,6 +209,15 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                 case "UNOMASTER":
                     YouNoMasterRequest youNoMasterRequest = YouNoMasterRequest.parse(msg);
                     commandListener.onYouNoMasterRequest(youNoMasterRequest);
+                    break;
+                case "MASTERWHO":
+                    MasterWhoRequest masterWhoRequest = MasterWhoRequest.parse(msg);
+                    commandListener.onMasterWhoRequest(masterWhoRequest);
+                    break;
+                case "MASTERS":
+                    if (this.masterRequestResponseHandler != null) {
+                        this.masterRequestResponseHandler.setResponse(msg);
+                    }
                     break;
             }
         } catch (Exception ex) {//todo make this better
