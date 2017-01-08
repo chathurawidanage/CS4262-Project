@@ -35,6 +35,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
 
     //RequestResponse Handlers
     private UDPRequestResponseHandler registerRequestResponseHandler;
+    private UDPRequestResponseHandler unregisterRequestResponseHandler;
     private UDPRequestResponseHandler masterRequestResponseHandler;
     private UDPRequestResponseHandler providerRequestResponseHandler;
 
@@ -77,8 +78,20 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
-    public UnregisterResponse unregister() {
-        return null;
+    public UnregisterResponse unregister() throws CommunicationException {
+        UnregisterRequest unregisterRequest = new UnregisterRequest();
+        unregisterRequest.setNode(selfNode);
+        unregisterRequest.setUsername(selfNode.getUsername());
+        this.unregisterRequestResponseHandler =
+                new UDPRequestResponseHandler(bootstrapServer, unregisterRequest, this);
+        try {
+            this.unregisterRequestResponseHandler.send();
+            UnregisterResponse unregisterResponse = UnregisterResponse.parse(this.unregisterRequestResponseHandler.getResponse());
+            this.unregisterRequestResponseHandler = null;
+            return unregisterResponse;
+        } catch (InterruptedException e) {
+            throw new CommunicationException(e);
+        }
     }
 
     @Override
@@ -225,9 +238,13 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
             switch (command) {
                 case "REGOK":
                     //handle register response
-                    logger.info("Received REGOK with message '{}'", msg);
                     if (this.registerRequestResponseHandler != null) {
                         registerRequestResponseHandler.setResponse(msg);
+                    }
+                    break;
+                case "UNREGOK":
+                    if (this.unregisterRequestResponseHandler != null) {
+                        this.unregisterRequestResponseHandler.setResponse(msg);
                     }
                     break;
                 case "LEAVE":
