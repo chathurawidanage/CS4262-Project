@@ -44,7 +44,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
 
         this.broadcastableCache = new Cache2kBuilder<String, Broadcastable>() {
         }
-                .name("broadcastables")
+                .name("broadcastables_" + UUID.randomUUID().toString())
                 .eternal(false)
                 .expireAfterWrite(1, TimeUnit.DAYS)
                 .entryCapacity(10000).build();
