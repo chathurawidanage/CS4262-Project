@@ -69,7 +69,7 @@ public class MasterBroadcast extends Message implements Broadcastable {
 
     @Override
     public String getSendableString() {
-        String msg = "MEMASTER " + node.getIp() + " " + node.getPort() + " ";
+        String msg = "MEMASTER " + uuid + " " + node.getIp() + " " + node.getPort() + " " + wordsList.size() + " ";
         for (String word : wordsList) {
             msg += word + " ";
         }
