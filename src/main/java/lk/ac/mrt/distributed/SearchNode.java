@@ -11,7 +11,9 @@ import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
+import lk.ac.mrt.distributed.api.messages.requests.MasterWhoRequest;
 import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
+import lk.ac.mrt.distributed.api.messages.responses.MasterWhoResponse;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -141,6 +143,36 @@ public class SearchNode extends Node implements CommandListener {
             );
         } catch (CommunicationException e) {//todo ugly try catch here
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onMasterWhoRequest(MasterWhoRequest masterWhoRequest) {
+        Node askingNode = masterWhoRequest.getNode();
+        try {
+            this.nodeOps.sendMasters(askingNode, this.masters);
+        } catch (CommunicationException e) {//todo ugly try catch
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onMasterWhoResponse(MasterWhoResponse masterWhoResponse) {
+        Map<String, Node> newMasters = masterWhoResponse.getMasters();
+        Iterator<String> wordsIterator = newMasters.keySet().iterator();
+        while(wordsIterator.hasNext()){
+            String word=wordsIterator.next();
+            Node master=newMasters.get(word);
+            if(this.masters.containsKey(word) && !this.masters.get(word).equals(master)){//conflict
+                Node oldMaster=this.masters.get(word);
+                this.masters.put(word,master);
+                //let false master know he is no longer the master
+                try {
+                    this.nodeOps.letFalseMasterKnow(word,oldMaster,master);
+                } catch (CommunicationException e) {//todo ugly try catch
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
