@@ -77,7 +77,7 @@ public class SearchNode extends Node implements CommandListener {
 
         for (String file : this.files) { //iterate through all files and build the inverted file index
             if (file != null) {
-                tokens = file.split(" ");
+                tokens = file.split("_");
                 for (String token : tokens) {
                     files = invertedFileIndex.get(token);
                     if (files == null) {

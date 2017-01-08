@@ -32,6 +32,12 @@ public class BootstrapTest extends TestCase {
         SearchNode searchNode2 = new SearchNode("NODE2", "127.0.0.1", 44447, node2OpsUDP);
         searchNode2.bootstrap();
 
+        Thread.sleep(200);
+        NodeOpsUDPImpl node3OpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
+        SearchNode searchNode3 = new SearchNode("NODE3", "127.0.0.1", 44448, node3OpsUDP);
+        searchNode3.bootstrap();
+
+
         Thread.sleep(2000);
     }
 }
