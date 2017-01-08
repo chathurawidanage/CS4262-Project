@@ -31,6 +31,12 @@ public class FileNamesGenerator {
             "Hacking for Dummies"
     };
 
+    static {
+        for (int i = 0; i < fileNames.length; i++) {
+            fileNames[i] = fileNames[i].toLowerCase().replace(" ", "_");
+        }
+    }
+
     public static ArrayList<String> getRandomFileNames() {
         ArrayList<String> files = new ArrayList<>();
 
