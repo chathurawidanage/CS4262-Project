@@ -61,7 +61,8 @@ public abstract class NodeOps {
 
     public abstract void changeMasterBroadcast(String word, Node oldMaster, Node newMaster, Set<Node> toNeighbours) throws CommunicationException;
 
-    public abstract void broadcastIAmMaster(List<String> words,Set<Node> neighbours) throws CommunicationException;
+    public abstract void broadcastIAmMaster(List<String> words, Set<Node> neighbours) throws CommunicationException;
+
     /**
      * Let and older master know that, he is no longer the master. It is his responsibility to
      * call changeMasterBroadcast when he receive this message
@@ -88,4 +89,8 @@ public abstract class NodeOps {
      * @param master
      */
     public abstract void iHaveFilesForWord(Node master, String word, List<String> fileNames) throws CommunicationException;
+
+    public abstract List<Node> getProvidersForWord(String word,Node masterNode) throws CommunicationException;
+
+    public abstract void sendProviders(Node to,String word,List<Node> providers) throws CommunicationException;
 }
