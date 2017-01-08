@@ -1,0 +1,12 @@
+##**MEMASTER uuid ip port word_count word1 word2 word3 //broadcast you as master
+##**MENOMASTER uuid word ip port ip_real_master port_real_master //once node realize i am not master, it broadcast this. Other nodes having this as master should update their entries
+##**UNOMASTER word ip_real_master port_real_master //one to one message once a node realize a master conflict
+**IHAVE word ip port file_name1,filename2 //by a node directly to master. let master know that I have a file name having the word
+**YOUBEMASTER word ip1 port1 file_name1 ip1 port1 filename2// when master leave, transfer his master ship, after this MENOMASTER is sent
+**PROVFOR word ip port//send providers for : requested by an node from a master
+**PROVS word ip1 port1 csv_filenames1 ip2 port2 csv_filenames2
+
+##**MASTERWHO ip port//node to it's neighbours asking masters
+##**MASTERS mastercount word1 ip1 port1 word2 ip2 port2//neighbours send this as a repose for above
+
+//broadcast messages have uuid
