@@ -71,6 +71,7 @@ public class SearchNode extends Node implements CommandListener {
     public void unregister() throws CommunicationException {
         this.nodeOps.unregister();
     }
+
     public void join() throws CommunicationException {
         this.nodeOps.join(neighbours);
     }
@@ -117,7 +118,10 @@ public class SearchNode extends Node implements CommandListener {
             } else {
                 iAmMasterFileTokens.add(fileToken);
                 resoureceEndpoints = this.resourceProviders.get(fileToken);
-                if (resoureceEndpoints == null) resoureceEndpoints = new ArrayList();
+                if (resoureceEndpoints == null) {
+                    resoureceEndpoints = new ArrayList();
+                    this.resourceProviders.put(fileToken, resoureceEndpoints);
+                }
                 resoureceEndpoints.add(this);
             }
         }
@@ -259,7 +263,7 @@ public class SearchNode extends Node implements CommandListener {
                         candidateFiles = provider.getFiles();
                         for (String file :
                                 candidateFiles) {
-                            if(containsAll(file, queryTokens))
+                            if (containsAll(file, queryTokens))
                                 searchResults.add(new Pair(provider, file));
                         }
                     }
@@ -276,6 +280,7 @@ public class SearchNode extends Node implements CommandListener {
         List<String> haystackTokenized = Arrays.asList(haystack.split("[\\s_]+"));
         return haystackTokenized.containsAll(needles);
     }
+
     /**
      * Will be used by node it self to carefully merge existing masters and
      * handle conflicts and let false master know about the conflicts
