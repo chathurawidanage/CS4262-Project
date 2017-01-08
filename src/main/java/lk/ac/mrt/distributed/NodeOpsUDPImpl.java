@@ -367,7 +367,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         DatagramPacket datagramPacket = new DatagramPacket(msgBuffer, msgBuffer.length);
         datagramPacket.setAddress(inetAddress);
         datagramPacket.setPort(port);
-        logger.info("Sending message '{}' to {}:{}", new String(msgBuffer), inetAddress.getHostName(), port);
+        logger.info("Sending message '{}' to {}:{}", new String(msgBuffer), inetAddress.getHostAddress(), port);
         try {
             socket.send(datagramPacket);
         } catch (IOException e) {

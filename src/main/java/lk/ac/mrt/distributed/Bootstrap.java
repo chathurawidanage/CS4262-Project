@@ -18,9 +18,9 @@ public class Bootstrap {
     private static final Logger logger = LogManager.getLogger(Bootstrap.class);
     private static NodeGUIConsole consoleGUI;
     public static void main(String[] args) throws SocketException {
-        NodeOpsUDPImpl nodeOpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
+        NodeOpsUDPImpl nodeOpsUDP = new NodeOpsUDPImpl("192.168.43.138", 55555);
         try {
-            final SearchNode searchNode = new SearchNode("NODE2", "127.0.0.1", 44442, nodeOpsUDP);
+            final SearchNode searchNode = new SearchNode("chathura2", "192.168.43.138", 44442, nodeOpsUDP);
             searchNode.bootstrap();
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
