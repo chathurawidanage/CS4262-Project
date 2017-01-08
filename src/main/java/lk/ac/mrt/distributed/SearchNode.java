@@ -118,7 +118,10 @@ public class SearchNode extends Node implements CommandListener {
             } else {
                 iAmMasterFileTokens.add(fileToken);
                 resoureceEndpoints = this.resourceProviders.get(fileToken);
-                if (resoureceEndpoints == null) resoureceEndpoints = new ArrayList();
+                if (resoureceEndpoints == null) {
+                    resoureceEndpoints = new ArrayList();
+                    this.resourceProviders.put(fileToken, resoureceEndpoints);
+                }
                 resoureceEndpoints.add(this);
             }
         }
@@ -280,7 +283,6 @@ public class SearchNode extends Node implements CommandListener {
     }
 
     private boolean containsAll(String haystack, Collection<String> needles) {
-        boolean result = true;
         List<String> haystackTokenized = Arrays.asList(haystack.split("[\\s_]+"));
         return haystackTokenized.containsAll(needles);
     }

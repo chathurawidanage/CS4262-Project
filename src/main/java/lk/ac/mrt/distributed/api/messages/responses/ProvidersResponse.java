@@ -19,6 +19,7 @@ public class ProvidersResponse extends Message {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
         String length = stringTokenizer.nextToken();
         String messageType = stringTokenizer.nextToken();
+        String word=stringTokenizer.nextToken();
 
         ProvidersResponse provForResponse = new ProvidersResponse();
         List<Node> providerNodes = new ArrayList<>();
@@ -39,16 +40,17 @@ public class ProvidersResponse extends Message {
         }
 
         provForResponse.setProviders(providerNodes);
+        provForResponse.setWord(word);
 
         return provForResponse;
     }
 
     @Override
     public String getSendableString() {
-        String response = "PROVS";
+        String response = "PROVS "+word;
         for (Node node : providers) {
             for (String file : node.getFiles()) {
-                response += " " + word + " " + node.getIp() + " " + node.getPort() + " " + file;
+                response += " " + node.getIp() + " " + node.getPort() + " " + file;
             }
         }
         return this.getLengthAppenedMessage(response);

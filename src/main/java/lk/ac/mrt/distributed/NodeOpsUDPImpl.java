@@ -122,11 +122,11 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         Broadcastable oldBroadcastable = broadcastableCache.get(broadcastable.getMessageId());
         if (oldBroadcastable == null || !oldBroadcastable.isBroadcasted()) {//prevent rebroadcasting same message
             //narrowcasting to all neighbours -> broadcasting to whole network
+            broadcastableCache.put(broadcastable.getMessageId(), broadcastable);//put this first to avoid receiving message again to me from a neighbour
             for (Node n : neighbours) {
                 this.send(n, broadcastable);
             }
             broadcastable.setBroadcasted();
-            broadcastableCache.put(broadcastable.getMessageId(), broadcastable);
         }
     }
 
@@ -188,7 +188,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     public List<Node> getProvidersForWord(String word, Node master) throws CommunicationException {
         ProvidersRequest providersRequest = new ProvidersRequest();
         providersRequest.setWord(word);
-        providersRequest.setNode(master);
+        providersRequest.setNode(selfNode);
         this.providerRequestResponseHandler = new UDPRequestResponseHandler(master, providersRequest, this);
         try {
             this.providerRequestResponseHandler.send();
