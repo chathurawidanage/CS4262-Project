@@ -36,6 +36,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     //RequestResponse Handlers
     private UDPRequestResponseHandler registerRequestResponseHandler;
     private UDPRequestResponseHandler masterRequestResponseHandler;
+    private UDPRequestResponseHandler providerRequestResponseHandler;
 
     private Cache<String, Broadcastable> broadcastableCache;
 
@@ -167,6 +168,31 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
+    public List<Node> getProvidersForWord(String word, Node master) throws CommunicationException {
+        ProvidersRequest providersRequest = new ProvidersRequest();
+        providersRequest.setWord(word);
+        providersRequest.setNode(master);
+        this.providerRequestResponseHandler = new UDPRequestResponseHandler(master, providersRequest, this);
+        try {
+            this.providerRequestResponseHandler.send();
+            ProvidersResponse providersResponse = ProvidersResponse.parse(this.providerRequestResponseHandler.getResponse());
+            this.providerRequestResponseHandler = null;
+            return providersResponse.getProviders();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new CommunicationException(e);
+        }
+    }
+
+    @Override
+    public void sendProviders(Node to, String word, List<Node> providers) throws CommunicationException {
+        ProvidersResponse providersResponse = new ProvidersResponse();
+        providersResponse.setProviders(providers);
+        providersResponse.setWord(word);
+        send(to, providersResponse);
+    }
+
+    @Override
     public void run() {
         byte buffer[];
         DatagramPacket datagramPacket;
@@ -237,6 +263,15 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                 case "MASTERS":
                     if (this.masterRequestResponseHandler != null) {
                         this.masterRequestResponseHandler.setResponse(msg);
+                    }
+                    break;
+                case "PROVFOR":
+                    ProvidersRequest providersRequest = ProvidersRequest.parse(msg);
+                    this.commandListener.onProvidersRequest(providersRequest);
+                    break;
+                case "PROVS":
+                    if (this.providerRequestResponseHandler != null) {
+                        this.providerRequestResponseHandler.setResponse(msg);
                     }
                     break;
             }
