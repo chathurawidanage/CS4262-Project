@@ -71,6 +71,7 @@ public class SearchNode extends Node implements CommandListener {
     public void unregister() throws CommunicationException {
         this.nodeOps.unregister();
     }
+
     public void join() throws CommunicationException {
         this.nodeOps.join(neighbours);
     }
@@ -245,26 +246,33 @@ public class SearchNode extends Node implements CommandListener {
 
     public List<Pair<String, Node>> search(String query) {
         HashSet<String> queryTokens = new HashSet<>();
-        List<Node> providers;
+        List<Node> providers = null;
         List<Pair<String, Node>> searchResults = new ArrayList<>();
         List<String> candidateFiles;
         String[] temp = query.trim().split("\\+s");
         for (String t : temp) queryTokens.add(t);
         for (String queryToken : queryTokens) {
-            if (masters.containsKey(queryToken)) {
+            if (resourceProviders.containsKey(queryToken)) { //i am the master for this word
+                providers = resourceProviders.get(queryToken);
+            } else if (masters.containsKey(queryToken)) {
                 try {
                     providers = nodeOps.getProvidersForWord(queryToken, masters.get(queryToken));
-                    for (Node provider :
-                            providers) {
-                        candidateFiles = provider.getFiles();
-                        for (String file :
-                                candidateFiles) {
-                            if(containsAll(file, queryTokens))
-                                searchResults.add(new Pair(provider, file));
-                        }
-                    }
                 } catch (CommunicationException e) {
                     e.printStackTrace();
+                }
+            } else { //this key is not in my current view of the network, hence return empty set
+                searchResults.clear();
+                return searchResults;
+            }
+            if (providers != null) {
+                for (Node provider :
+                        providers) {
+                    candidateFiles = provider.getFiles();
+                    for (String file :
+                            candidateFiles) {
+                        if (containsAll(file, queryTokens))
+                            searchResults.add(new Pair(provider, file));
+                    }
                 }
             }
         }
@@ -276,6 +284,7 @@ public class SearchNode extends Node implements CommandListener {
         List<String> haystackTokenized = Arrays.asList(haystack.split("[\\s_]+"));
         return haystackTokenized.containsAll(needles);
     }
+
     /**
      * Will be used by node it self to carefully merge existing masters and
      * handle conflicts and let false master know about the conflicts

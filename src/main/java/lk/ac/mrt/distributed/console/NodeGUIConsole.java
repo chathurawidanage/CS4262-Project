@@ -110,8 +110,10 @@ public class NodeGUIConsole {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnSearch.setEnabled(false);
+                btnSearch.setName("SEARCHING");
                 populateSearchResult(node.search(txtSearch.getText().trim()));
                 btnSearch.setEnabled(true);
+                btnSearch.setName("SEARCH");
             }
         });
 
