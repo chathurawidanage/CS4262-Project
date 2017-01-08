@@ -81,8 +81,12 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
-    public void join(Set<Node> neighbours) {
-
+    public void join(Set<Node> neighbours) throws CommunicationException {
+        for(Node neigh:neighbours){
+            JoinRequest joinRequest=new JoinRequest();
+            joinRequest.setNode(selfNode);
+            this.send(neigh,joinRequest);
+        }
     }
 
     @Override

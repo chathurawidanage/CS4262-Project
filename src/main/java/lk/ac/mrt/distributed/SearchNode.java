@@ -44,8 +44,11 @@ public class SearchNode extends Node implements CommandListener {
         this.nodeOps = nodeOps;
         this.nodeOps.setCommandListener(this);
         this.nodeOps.start(this);
-    }
 
+        //get random set of files
+        ArrayList<String> randomFileNames = FileNamesGenerator.getRandomFileNames();
+        this.files.addAll(randomFileNames);
+    }
 
     public void bootstrap() throws SocketException, UnknownHostException, CommunicationException, RegistrationException {
         //register node
@@ -56,10 +59,18 @@ public class SearchNode extends Node implements CommandListener {
         }
 
         //our architecture specific stuff
-        for(Node neigh:neighbours){
+        for (Node neigh : neighbours) {
             Map<String, Node> newMasters = this.nodeOps.askForMasters(neigh);
             this.mergeNewMasters(newMasters);
         }
+    }
+
+    /**
+     * This method split node's file names and let corresponding masters about them.
+     * If there is no master, node self assign it self as the master and broadcast MEMASTER
+     */
+    public void processMyFiles(){
+
     }
 
 
@@ -163,6 +174,7 @@ public class SearchNode extends Node implements CommandListener {
     /**
      * Will be used by node it self to carefully merge existing masters and
      * handle conflicts and let false master know about the conflicts
+     *
      * @param newMasters
      */
     private void mergeNewMasters(Map<String, Node> newMasters) {
