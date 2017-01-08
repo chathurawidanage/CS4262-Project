@@ -2,7 +2,6 @@ package lk.ac.mrt.distributed.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Chathura Widanage
@@ -27,12 +26,12 @@ public class Node {
         this.files = files;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getUsername() {
         return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public int getPort() {
@@ -53,7 +52,7 @@ public class Node {
 
     @Override
     public String toString() {
-        return ip + ":" + port;
+        return username + "@" + ip + ":" + port;
     }
 
     @Override
