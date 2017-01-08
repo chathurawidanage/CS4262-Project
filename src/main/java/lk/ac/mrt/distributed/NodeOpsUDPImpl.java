@@ -107,7 +107,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
             for (Node n : neighbours) {
                 this.send(n, broadcastable);
             }
-            oldBroadcastable.setBroadcasted();
+            broadcastable.setBroadcasted();
             broadcastableCache.put(broadcastable.getMessageId(), broadcastable);
         }
     }
