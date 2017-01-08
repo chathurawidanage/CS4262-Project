@@ -5,16 +5,18 @@ import javafx.util.Pair;
 import lk.ac.mrt.distributed.SearchNode;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.List;
 
 public class NodeGUIConsole {
+    private final static Logger logger = LogManager.getLogger(SearchNode.class);
+
     private JButton btnSearch;
     private JButton btnUnregister;
     private JButton btnLeave;
@@ -110,16 +112,39 @@ public class NodeGUIConsole {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnSearch.setEnabled(false);
+                logger.info("Search invoked query: " + txtSearch.getText());
+                btnSearch.setName("SEARCHING");
                 populateSearchResult(node.search(txtSearch.getText().trim()));
                 btnSearch.setEnabled(true);
+                btnSearch.setName("SEARCH");
+                txtSearch.selectAll();
             }
         });
+        txtSearch.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
 
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    e.consume();
+                    btnSearch.doClick();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
         btnLeave.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     btnLeave.setEnabled(false);
+                    logger.info("Leave Invoked");
                     node.leave();
                     JOptionPane.showMessageDialog(frame, "Leave Successful!");
                 } catch (CommunicationException e1) {
@@ -136,6 +161,7 @@ public class NodeGUIConsole {
                 btnUnregister.setEnabled(false);
                 try {
                     node.unregister();
+                    logger.info("Unregister Invoked");
                     JOptionPane.showMessageDialog(frame, "Unregistered!");
                 } catch (CommunicationException e1) {
                     JOptionPane.showMessageDialog(frame, "Unregister failed: " + e1.getMessage());

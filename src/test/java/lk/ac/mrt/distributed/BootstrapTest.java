@@ -16,6 +16,7 @@ import java.util.Scanner;
  */
 public class BootstrapTest extends TestCase {
     public void testTwoNodes() throws InterruptedException, UnknownHostException, RegistrationException, CommunicationException, SocketException, NullCommandListenerException, BootstrapException {
+        //start a Bootstrap Server
         (new Thread(new Runnable() {
             @Override
             public void run() {

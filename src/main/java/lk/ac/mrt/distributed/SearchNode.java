@@ -128,7 +128,8 @@ public class SearchNode extends Node implements CommandListener {
         }
 
         try {
-            nodeOps.broadcastIAmMaster(iAmMasterFileTokens, this.neighbours);
+            if(iAmMasterFileTokens.size() > 0)
+                nodeOps.broadcastIAmMaster(iAmMasterFileTokens, this.neighbours);
         } catch (CommunicationException e) {
             e.printStackTrace(); //todo handle this
         }
@@ -300,26 +301,33 @@ public class SearchNode extends Node implements CommandListener {
 
     public List<Pair<String, Node>> search(String query) {
         HashSet<String> queryTokens = new HashSet<>();
-        List<Node> providers;
+        List<Node> providers = null;
         List<Pair<String, Node>> searchResults = new ArrayList<>();
         List<String> candidateFiles;
         String[] temp = query.trim().split("\\+s");
         for (String t : temp) queryTokens.add(t);
         for (String queryToken : queryTokens) {
-            if (masters.containsKey(queryToken)) {
+            if (resourceProviders.containsKey(queryToken)) { //i am the master for this word
+                providers = resourceProviders.get(queryToken);
+            } else if (masters.containsKey(queryToken)) {
                 try {
                     providers = nodeOps.getProvidersForWord(queryToken, masters.get(queryToken));
-                    for (Node provider :
-                            providers) {
-                        candidateFiles = provider.getFiles();
-                        for (String file :
-                                candidateFiles) {
-                            if (containsAll(file, queryTokens))
-                                searchResults.add(new Pair(provider, file));
-                        }
-                    }
                 } catch (CommunicationException e) {
                     e.printStackTrace();
+                }
+            } else { //this key is not in my current view of the network, hence return empty set
+                searchResults.clear();
+                return searchResults;
+            }
+            if (providers != null) {
+                for (Node provider :
+                        providers) {
+                    candidateFiles = provider.getFiles();
+                    for (String file :
+                            candidateFiles) {
+                        if (containsAll(file, queryTokens))
+                            searchResults.add(new Pair(provider, file));
+                    }
                 }
             }
         }
@@ -327,7 +335,6 @@ public class SearchNode extends Node implements CommandListener {
     }
 
     private boolean containsAll(String haystack, Collection<String> needles) {
-        boolean result = true;
         List<String> haystackTokenized = Arrays.asList(haystack.split("[\\s_]+"));
         return haystackTokenized.containsAll(needles);
     }
