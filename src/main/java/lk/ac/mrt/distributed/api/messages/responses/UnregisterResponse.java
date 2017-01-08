@@ -7,7 +7,7 @@ import java.util.StringTokenizer;
 /**
  * @author Chathura Widanage
  */
-public class UnRegisterResponse extends Message {
+public class UnregisterResponse extends Message {
 
     private int value;
 
@@ -19,20 +19,24 @@ public class UnRegisterResponse extends Message {
         this.value = value;
     }
 
-    public static UnRegisterResponse parse(String msg){
+    public static UnregisterResponse parse(String msg){
         //todo parse registser response
         StringTokenizer stringTokenizer=new StringTokenizer(msg," ");
         String length=stringTokenizer.nextToken();
         String message=stringTokenizer.nextToken();
         Integer value=Integer.parseInt(stringTokenizer.nextToken());
-        UnRegisterResponse unRegisterResponse=new UnRegisterResponse();
+        UnregisterResponse unRegisterResponse=new UnregisterResponse();
         unRegisterResponse.setValue(value);
         return unRegisterResponse;
     }
 
+    public static UnregisterResponse generate(int value){
+        //todo implementation
+        return null;
+    }
+
     public String getSendableString() {
         //todo length UNROK value
-        //not necessary
         return null;
     }
 }

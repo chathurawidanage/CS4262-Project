@@ -5,7 +5,7 @@ import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
-import lk.ac.mrt.distributed.api.messages.responses.UnRegisterResponse;
+import lk.ac.mrt.distributed.api.messages.responses.UnregisterResponse;
 
 import java.util.Set;
 
@@ -47,7 +47,7 @@ public abstract class NodeOps {
     /**
      * Unregisters node from the network
      */
-    public abstract UnRegisterResponse unregister() throws CommunicationException;
+    public abstract UnregisterResponse unregister() throws CommunicationException;
 
     public abstract void join(Set<Node> neighbours) throws CommunicationException;
 
