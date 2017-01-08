@@ -4,31 +4,30 @@ import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
-import lk.ac.mrt.distributed.console.ConsoleGUI;
+import lk.ac.mrt.distributed.console.NodeGUIConsole;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.UUID;
 
 /**
  * @author Chathura Widanage
  */
 public class Bootstrap {
     private static final Logger logger = LogManager.getLogger(Bootstrap.class);
-    private static ConsoleGUI consoleGUI;
+    private static NodeGUIConsole consoleGUI;
     public static void main(String[] args) throws SocketException {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                consoleGUI = new ConsoleGUI(null, null, null, null);
-                consoleGUI.createAndShowGUI();
-            }
-        });
         NodeOpsUDPImpl nodeOpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
         try {
-            SearchNode searchNode = new SearchNode("NODE3", "127.0.0.1", 44446, nodeOpsUDP);
+            final SearchNode searchNode = new SearchNode("NODE3", "127.0.0.1", 44446, nodeOpsUDP);
             searchNode.bootstrap();
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    consoleGUI = new NodeGUIConsole(searchNode);
+                    consoleGUI.display();
+                }
+            });
         } catch (NullCommandListenerException e) {
             e.printStackTrace();
         } catch (UnknownHostException e) {
