@@ -63,6 +63,14 @@ public class SearchNode extends Node implements CommandListener {
         this.processMyFiles();
     }
 
+    public void leave() throws CommunicationException {
+        this.nodeOps.leave(neighbours);
+    }
+
+    public void join() throws CommunicationException {
+        this.nodeOps.join(neighbours);
+    }
+
     /**
      * This method split node's file names and let corresponding masters about them.
      * If there is no master, node self assign it self as the master and broadcast MEMASTER
