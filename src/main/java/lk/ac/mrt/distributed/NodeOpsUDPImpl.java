@@ -197,7 +197,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         byte buffer[];
         DatagramPacket datagramPacket;
         while (true) {
-            buffer = new byte[65536];
+            buffer = new byte[65507];
             datagramPacket = new DatagramPacket(buffer, buffer.length);
             try {
                 logger.info("Waiting for a message...");
