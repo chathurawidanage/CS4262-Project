@@ -73,8 +73,8 @@ public class TakeMyGemsRequest extends Message {
     public String getSendableString() {
         String msg = "TAKEMYGEMS " + oldMaster.getIp() + " " + oldMaster.getPort() + " " + word;
         for (Node node : providers) {
-            for (String word : node.getFiles()) {
-                msg += " " + node.getIp() + " " + node.getPort() + " " + word;
+            for (String fileName : node.getFiles()) {
+                msg += " " + node.getIp() + " " + node.getPort() + " " + fileName;
             }
         }
         return this.getLengthAppenedMessage(msg);
