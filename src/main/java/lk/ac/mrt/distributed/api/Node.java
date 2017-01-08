@@ -60,7 +60,7 @@ public class Node {
     public boolean equals(Object obj) {
         if (obj != null && obj instanceof Node) {
             Node comp = (Node) obj;
-            return this.ip.equals(comp) && this.port == comp.port;
+            return this.ip.equals(comp.getIp()) && this.port == comp.port;
         }
         return false;
     }
