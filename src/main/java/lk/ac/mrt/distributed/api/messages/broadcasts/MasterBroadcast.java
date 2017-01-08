@@ -25,6 +25,10 @@ public class MasterBroadcast extends Message implements Broadcastable {
         this.node = node;
     }
 
+    public void setWordsList(List<String> wordsList) {
+        this.wordsList = wordsList;
+    }
+
     public List<String> getWordsList() {
         return wordsList;
     }

@@ -120,6 +120,13 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
+    public void broadcastIAmMaster(List<String> wordsList, Set<Node> neighbours) throws CommunicationException {
+        MasterBroadcast masterBroadcast = new MasterBroadcast(UUID.randomUUID().toString(), selfNode);
+        masterBroadcast.setWordsList(wordsList);
+        this.broadcast(masterBroadcast, neighbours);
+    }
+
+    @Override
     public void letFalseMasterKnow(String word, Node falseMaster, Node newMaster) throws CommunicationException {
         YouNoMasterRequest youNoMasterRequest = new YouNoMasterRequest(word, newMaster);
         this.send(falseMaster, youNoMasterRequest);

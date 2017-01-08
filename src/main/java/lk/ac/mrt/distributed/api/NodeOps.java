@@ -61,6 +61,7 @@ public abstract class NodeOps {
 
     public abstract void changeMasterBroadcast(String word, Node oldMaster, Node newMaster, Set<Node> toNeighbours) throws CommunicationException;
 
+    public abstract void broadcastIAmMaster(List<String> words,Set<Node> neighbours) throws CommunicationException;
     /**
      * Let and older master know that, he is no longer the master. It is his responsibility to
      * call changeMasterBroadcast when he receive this message
