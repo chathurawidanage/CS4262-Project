@@ -219,6 +219,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         this.transferOwnershipRequestResponseHandler = new UDPRequestResponseHandler(newMaster, takeMyGemsRequest, this);
         try {
             this.transferOwnershipRequestResponseHandler.send();
+            this.transferOwnershipRequestResponseHandler=null;
             return true;
         } catch (InterruptedException e) {
             throw new CommunicationException(e);
