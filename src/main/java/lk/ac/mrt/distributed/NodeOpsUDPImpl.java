@@ -304,6 +304,10 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     public void send(InetAddress inetAddress, int port, byte[] msgBuffer) throws CommunicationException {
+        if (msgBuffer.length > 65507) {//just to make sure
+            logger.error("UDP Packet size exceeded.");
+            throw new CommunicationException("UDP Packet size exceeded. Not supported by this application yet.");
+        }
         DatagramPacket datagramPacket = new DatagramPacket(msgBuffer, msgBuffer.length);
         datagramPacket.setAddress(inetAddress);
         datagramPacket.setPort(port);
