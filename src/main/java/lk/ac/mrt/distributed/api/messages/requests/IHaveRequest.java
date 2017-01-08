@@ -4,6 +4,7 @@ import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.messages.Message;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -14,7 +15,7 @@ public class IHaveRequest extends Message {
 
     private String word;
     private Node node;
-    private ArrayList<String> fileNames;
+    private List<String> fileNames;
 
     public String getWord() {
         return word;
@@ -24,7 +25,7 @@ public class IHaveRequest extends Message {
         return node;
     }
 
-    public ArrayList<String> getFileNames() {
+    public List<String> getFileNames() {
         return fileNames;
     }
 
@@ -36,7 +37,7 @@ public class IHaveRequest extends Message {
         this.node = node;
     }
 
-    public void setFileNames(ArrayList<String> fileNames) {
+    public void setFileNames(List<String> fileNames) {
         this.fileNames = fileNames;
     }
 

@@ -63,13 +63,15 @@ public class SearchNode extends Node implements CommandListener {
             Map<String, Node> newMasters = this.nodeOps.askForMasters(neigh);
             this.mergeNewMasters(newMasters);
         }
+
+        this.processMyFiles();
     }
 
     /**
      * This method split node's file names and let corresponding masters about them.
      * If there is no master, node self assign it self as the master and broadcast MEMASTER
      */
-    public void processMyFiles(){
+    public void processMyFiles() {
 
     }
 

@@ -7,6 +7,7 @@ import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import lk.ac.mrt.distributed.api.messages.responses.UnregisterResponse;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -72,10 +73,18 @@ public abstract class NodeOps {
 
     /**
      * Deliberately asking only from one to simplify things
+     *
      * @param neighbours
      * @throws CommunicationException
      */
-    public abstract Map<String,Node> askForMasters(Node neighbours) throws CommunicationException;
+    public abstract Map<String, Node> askForMasters(Node neighbours) throws CommunicationException;
 
     public abstract void sendMasters(Node to, Map<String, Node> masters) throws CommunicationException;
+
+    /**
+     * This will be sent by a node to the master of the word
+     *
+     * @param master
+     */
+    public abstract void iHaveFilesForWord(Node master, String word, List<String> fileNames) throws CommunicationException;
 }

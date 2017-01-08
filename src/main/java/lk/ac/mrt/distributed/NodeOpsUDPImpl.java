@@ -82,10 +82,10 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
 
     @Override
     public void join(Set<Node> neighbours) throws CommunicationException {
-        for(Node neigh:neighbours){
-            JoinRequest joinRequest=new JoinRequest();
+        for (Node neigh : neighbours) {
+            JoinRequest joinRequest = new JoinRequest();
             joinRequest.setNode(selfNode);
-            this.send(neigh,joinRequest);
+            this.send(neigh, joinRequest);
         }
     }
 
@@ -148,6 +148,15 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         MasterWhoResponse masterWhoResponse = new MasterWhoResponse();
         masterWhoResponse.setMasters(masters);
         this.send(to, masterWhoResponse);
+    }
+
+    @Override
+    public void iHaveFilesForWord(Node master, String word, List<String> fileNames) throws CommunicationException {
+        IHaveRequest iHaveRequest = new IHaveRequest();
+        iHaveRequest.setNode(selfNode);
+        iHaveRequest.setFileNames(fileNames);
+        iHaveRequest.setWord(word);
+        this.send(master, iHaveRequest);
     }
 
     @Override
