@@ -301,7 +301,7 @@ public class SearchNode extends Node implements CommandListener {
 
     public List<Pair<String, Node>> search(String query) {
         HashSet<String> queryTokens = new HashSet<>();
-        List<Node> providers = null;
+        Set<Node> providers = null;
         List<Pair<String, Node>> searchResults = new ArrayList<>();
         List<String> candidateFiles;
         String[] temp = query.trim().split("\\+s");
@@ -311,7 +311,7 @@ public class SearchNode extends Node implements CommandListener {
                 providers = resourceProviders.get(queryToken);
             } else if (masters.containsKey(queryToken)) {
                 try {
-                    providers = nodeOps.getProvidersForWord(queryToken, masters.get(queryToken));
+                    providers = new HashSet<>(nodeOps.getProvidersForWord(queryToken, masters.get(queryToken)));
                 } catch (CommunicationException e) {
                     e.printStackTrace();
                 }

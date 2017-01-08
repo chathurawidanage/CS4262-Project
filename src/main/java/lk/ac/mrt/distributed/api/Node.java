@@ -52,7 +52,7 @@ public class Node {
 
     @Override
     public String toString() {
-        return username + "@" + ip + ":" + port;
+        return ip + ":" + port;
     }
 
     @Override
