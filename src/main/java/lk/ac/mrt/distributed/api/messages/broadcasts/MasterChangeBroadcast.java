@@ -38,22 +38,22 @@ public class MasterChangeBroadcast extends Message implements Broadcastable {
         return newMaster;
     }
 
-    public static MasterChangeBroadcast parse(String msg){
-        StringTokenizer stringTokenizer=new StringTokenizer(msg," ");
-        String length=stringTokenizer.nextToken();
-        String message=stringTokenizer.nextToken();
-        String uuid=stringTokenizer.nextToken();
-        String word=stringTokenizer.nextToken();
+    public static MasterChangeBroadcast parse(String msg) {
+        StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
+        String length = stringTokenizer.nextToken();
+        String message = stringTokenizer.nextToken();
+        String uuid = stringTokenizer.nextToken();
+        String word = stringTokenizer.nextToken();
 
-        String oldMasterIp=stringTokenizer.nextToken();
-        Integer oldMasterPort=Integer.parseInt(stringTokenizer.nextToken());
-        String newMasterIp=stringTokenizer.nextToken();
-        Integer newMasterPort=Integer.parseInt(stringTokenizer.nextToken());
+        String oldMasterIp = stringTokenizer.nextToken();
+        Integer oldMasterPort = Integer.parseInt(stringTokenizer.nextToken());
+        String newMasterIp = stringTokenizer.nextToken();
+        Integer newMasterPort = Integer.parseInt(stringTokenizer.nextToken());
 
-        Node oldMaster=new Node(oldMasterIp,oldMasterPort);
-        Node newMaster=new Node(newMasterIp,newMasterPort);
+        Node oldMaster = new Node(oldMasterIp, oldMasterPort);
+        Node newMaster = new Node(newMasterIp, newMasterPort);
         MasterChangeBroadcast masterChangeBroadcast
-                =new MasterChangeBroadcast(uuid,word,oldMaster,newMaster);
+                = new MasterChangeBroadcast(uuid, word, oldMaster, newMaster);
         return masterChangeBroadcast;
     }
 
@@ -79,7 +79,7 @@ public class MasterChangeBroadcast extends Message implements Broadcastable {
 
     @Override
     public String getSendableString() {
-        String msg = "MENOMASTER " + word + " " + oldMaster.getIp() + " " +
+        String msg = "MENOMASTER " + uuid + " " + word + " " + oldMaster.getIp() + " " +
                 oldMaster.getPort() + " " + newMaster.getIp() + " " + newMaster.getPort();
         return this.getLengthAppenedMessage(msg);
     }
