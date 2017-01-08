@@ -9,10 +9,7 @@ import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
-import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
-import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
-import lk.ac.mrt.distributed.api.messages.requests.MasterWhoRequest;
-import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
+import lk.ac.mrt.distributed.api.messages.requests.*;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,7 +67,7 @@ public class SearchNode extends Node implements CommandListener {
      * This method split node's file names and let corresponding masters about them.
      * If there is no master, node self assign it self as the master and broadcast MEMASTER
      */
-    public void processMyFiles() {
+    private void processMyFiles() {
         HashMap<String, HashSet<String>> invertedFileIndex = new HashMap<>();
         HashSet<String> files;
         String[] tokens;
@@ -213,6 +210,22 @@ public class SearchNode extends Node implements CommandListener {
         Node askingNode = masterWhoRequest.getNode();
         try {
             this.nodeOps.sendMasters(askingNode, this.masters);
+        } catch (CommunicationException e) {//todo ugly try catch
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onProvidersRequest(ProvidersRequest providersRequest) {
+        String word = providersRequest.getWord();
+        Node requestingNode = providersRequest.getNode();
+        List<Node> providers = this.resourceProviders.get(word);
+        try {
+            if (providers != null) {
+                logger.warn("Null provider request. Possible error in protocol");
+                providers = new ArrayList<>();
+            }
+            this.nodeOps.sendProviders(requestingNode, word, providers);
         } catch (CommunicationException e) {//todo ugly try catch
             e.printStackTrace();
         }
