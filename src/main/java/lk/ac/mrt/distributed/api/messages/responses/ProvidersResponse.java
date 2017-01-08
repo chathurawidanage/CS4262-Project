@@ -10,15 +10,15 @@ import java.util.StringTokenizer;
 /**
  * Created by pubudu on 1/7/17.
  */
-public class ProviderNotificationResponse extends Message {
+public class ProvidersResponse extends Message {
     private List<Node> providers;
     private String word;
 
-    public static ProviderNotificationResponse parse(String msg) {
+    public static ProvidersResponse parse(String msg) {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
         String messageType = stringTokenizer.nextToken();
 
-        ProviderNotificationResponse provForResponse = new ProviderNotificationResponse();
+        ProvidersResponse provForResponse = new ProvidersResponse();
         List<Node> providerNodes = new ArrayList<>();
 
         while (stringTokenizer.hasMoreTokens()) {
@@ -50,5 +50,13 @@ public class ProviderNotificationResponse extends Message {
 
     public List<Node> getProviders() {
         return providers;
+    }
+
+    public void setWord(String word) {
+        this.word = word;
+    }
+
+    public String getWord() {
+        return word;
     }
 }

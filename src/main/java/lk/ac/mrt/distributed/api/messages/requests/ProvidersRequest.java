@@ -8,11 +8,11 @@ import java.util.StringTokenizer;
 /**
  * Created by pubudu on 1/7/17.
  */
-public class ProviderNotificationRequest extends Message {
+public class ProvidersRequest extends Message {
     private Node node;
     private String word;
 
-    public static ProviderNotificationRequest parse(String msg) {
+    public static ProvidersRequest parse(String msg) {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
         String message = stringTokenizer.nextToken();
         String word = stringTokenizer.nextToken();
@@ -20,7 +20,7 @@ public class ProviderNotificationRequest extends Message {
         Integer port = Integer.parseInt(stringTokenizer.nextToken());
 
         Node node = new Node(ip, port);
-        ProviderNotificationRequest provForRequest = new ProviderNotificationRequest();
+        ProvidersRequest provForRequest = new ProvidersRequest();
         provForRequest.setNode(node);
         provForRequest.setWord(word);
         return provForRequest;
@@ -37,5 +37,13 @@ public class ProviderNotificationRequest extends Message {
 
     public void setWord(String word) {
         this.word = word;
+    }
+
+    public String getWord() {
+        return word;
+    }
+
+    public Node getNode() {
+        return node;
     }
 }
