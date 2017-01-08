@@ -304,8 +304,15 @@ public class SearchNode extends Node implements CommandListener {
         Set<Node> providers = null;
         List<Pair<String, Node>> searchResults = new ArrayList<>();
         List<String> candidateFiles;
+        Set<String> worldKeyset = masters.keySet();
+        Set<String> myKeyset = resourceProviders.keySet();
         String[] temp = query.trim().split("\\+s");
-        for (String t : temp) queryTokens.add(t);
+        for (String t : temp) {
+            if(!worldKeyset.contains(t) && !myKeyset.contains(t)) //this is an alien key, we have no files on this key
+                return searchResults; //return empty result, without doing any network operations
+            queryTokens.add(t);
+        }
+
         for (String queryToken : queryTokens) {
             if (resourceProviders.containsKey(queryToken)) { //i am the master for this word
                 providers = resourceProviders.get(queryToken);
