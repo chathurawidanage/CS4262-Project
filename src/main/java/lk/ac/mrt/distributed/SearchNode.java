@@ -120,6 +120,7 @@ public class SearchNode extends Node implements CommandListener {
                 resoureceEndpoints = this.resourceProviders.get(fileToken);
                 if (resoureceEndpoints == null) {
                     resoureceEndpoints = new ArrayList();
+                    resoureceEndpoints.add(this);
                     this.resourceProviders.put(fileToken, resoureceEndpoints);
                 }
                 resoureceEndpoints.add(this);
@@ -127,7 +128,8 @@ public class SearchNode extends Node implements CommandListener {
         }
 
         try {
-            nodeOps.broadcastIAmMaster(iAmMasterFileTokens, this.neighbours);
+            if(iAmMasterFileTokens.size() > 0)
+                nodeOps.broadcastIAmMaster(iAmMasterFileTokens, this.neighbours);
         } catch (CommunicationException e) {
             e.printStackTrace(); //todo handle this
         }
