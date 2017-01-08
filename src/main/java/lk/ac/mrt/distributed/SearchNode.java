@@ -13,7 +13,6 @@ import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
 import lk.ac.mrt.distributed.api.messages.requests.LeaveRequest;
 import lk.ac.mrt.distributed.api.messages.requests.MasterWhoRequest;
 import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
-import lk.ac.mrt.distributed.api.messages.responses.MasterWhoResponse;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,7 +71,53 @@ public class SearchNode extends Node implements CommandListener {
      * If there is no master, node self assign it self as the master and broadcast MEMASTER
      */
     public void processMyFiles() {
+        HashMap<String, HashSet<String>> invertedFileIndex = new HashMap<>();
+        HashSet<String> files;
+        String[] tokens;
 
+        for (String file : this.files) { //iterate through all files and build the inverted file index
+            if (file != null) {
+                tokens = file.split(" ");
+                for (String token : tokens) {
+                    files = invertedFileIndex.get(token);
+                    if (files == null) {
+                        files = new HashSet<>();
+                        files.add(file);
+                        invertedFileIndex.put(token, files);
+                    } else {
+                        files.add(file);
+                    }
+                }
+            }
+        }
+
+        Set<String> fileTokens = invertedFileIndex.keySet(); //the file tokens of all the files that i hold
+        ArrayList<String> filesList = new ArrayList<>();
+        ArrayList<String> iAmMasterFileTokens = new ArrayList<>();
+        List<Node> resoureceEndpoints;
+
+        for (String fileToken : fileTokens) {
+            if (masters.containsKey(fileToken)) {
+                filesList.clear();
+                filesList.addAll(invertedFileIndex.get(fileToken));
+                try {
+                    nodeOps.iHaveFilesForWord(masters.get(fileToken), fileToken, filesList);
+                } catch (CommunicationException e) {
+                    e.printStackTrace(); //todo handle this
+                }
+            } else {
+                iAmMasterFileTokens.add(fileToken);
+                resoureceEndpoints = this.resourceProviders.get(fileToken);
+                if (resoureceEndpoints == null) resoureceEndpoints = new ArrayList();
+                resoureceEndpoints.add(this);
+            }
+        }
+
+        try {
+            nodeOps.broadcastIAmMaster(iAmMasterFileTokens, this.neighbours);
+        } catch (CommunicationException e) {
+            e.printStackTrace(); //todo handle this
+        }
     }
 
 
