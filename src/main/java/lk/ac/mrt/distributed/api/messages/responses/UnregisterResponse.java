@@ -30,11 +30,6 @@ public class UnregisterResponse extends Message {
         return unRegisterResponse;
     }
 
-    public static UnregisterResponse generate(int value){
-        //todo implementation
-        return null;
-    }
-
     public String getSendableString() {
         //todo length UNROK value
         return null;

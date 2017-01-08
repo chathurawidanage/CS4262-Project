@@ -104,8 +104,12 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     }
 
     @Override
-    public void leave(Set<Node> neighbours) {
-
+    public void leave(Set<Node> neighbours) throws CommunicationException {
+        for (Node neigh : neighbours) {
+            LeaveRequest leaveRequest = new LeaveRequest();
+            leaveRequest.setNode(selfNode);
+            this.send(neigh, leaveRequest);
+        }
     }
 
     @Override
