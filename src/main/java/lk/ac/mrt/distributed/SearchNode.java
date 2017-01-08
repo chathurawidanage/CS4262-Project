@@ -233,7 +233,7 @@ public class SearchNode extends Node implements CommandListener {
         Node requestingNode = providersRequest.getNode();
         List<Node> providers = this.resourceProviders.get(word);
         try {
-            if (providers != null) {
+            if (providers == null) {
                 logger.warn("Null provider request. Possible error in protocol");
                 providers = new ArrayList<>();
             }

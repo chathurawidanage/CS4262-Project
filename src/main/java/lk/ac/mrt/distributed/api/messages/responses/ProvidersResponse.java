@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
+ * word ip1 port1 csv_filenames1 ip2 port2 csv_filenames2
  * Created by pubudu on 1/7/17.
  */
 public class ProvidersResponse extends Message {
@@ -16,6 +17,7 @@ public class ProvidersResponse extends Message {
 
     public static ProvidersResponse parse(String msg) {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
+        String length = stringTokenizer.nextToken();
         String messageType = stringTokenizer.nextToken();
 
         ProvidersResponse provForResponse = new ProvidersResponse();
@@ -24,8 +26,16 @@ public class ProvidersResponse extends Message {
         while (stringTokenizer.hasMoreTokens()) {
             String providerIp = stringTokenizer.nextToken();
             Integer providerPort = Integer.parseInt(stringTokenizer.nextToken()); // assuming the <ip port> structure is always followed
-            Node neighbourNode = new Node(providerIp, providerPort);
-            providerNodes.add(neighbourNode);
+            Node node = new Node(providerIp, providerPort);
+            if (providerNodes.contains(node)) {
+                node = providerNodes.get(providerNodes.indexOf(node));
+            } else {
+                providerNodes.add(node);
+            }
+            if (node.getFiles() == null) {
+                node.setFiles(new ArrayList<String>());
+            }
+            node.getFiles().add(stringTokenizer.nextToken());
         }
 
         provForResponse.setProviders(providerNodes);
@@ -36,12 +46,12 @@ public class ProvidersResponse extends Message {
     @Override
     public String getSendableString() {
         String response = "PROVS";
-
         for (Node node : providers) {
-            response += " " + word + " " + node.getIp() + " " + node.getPort();
-            // TODO: append the file names as well
+            for (String file : node.getFiles()) {
+                response += " " + word + " " + node.getIp() + " " + node.getPort() + " " + file;
+            }
         }
-        return null;
+        return this.getLengthAppenedMessage(response);
     }
 
     public void setProviders(List<Node> providers) {

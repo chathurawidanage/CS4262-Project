@@ -6,6 +6,7 @@ import lk.ac.mrt.distributed.api.messages.Message;
 import java.util.StringTokenizer;
 
 /**
+ * word ip port
  * Created by pubudu on 1/7/17.
  */
 public class ProvidersRequest extends Message {
@@ -14,6 +15,7 @@ public class ProvidersRequest extends Message {
 
     public static ProvidersRequest parse(String msg) {
         StringTokenizer stringTokenizer = new StringTokenizer(msg, " ");
+        String legth=stringTokenizer.nextToken();
         String message = stringTokenizer.nextToken();
         String word = stringTokenizer.nextToken();
         String ip = stringTokenizer.nextToken();
