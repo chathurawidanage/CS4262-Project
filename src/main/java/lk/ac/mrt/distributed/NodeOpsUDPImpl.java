@@ -219,7 +219,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
         this.transferOwnershipRequestResponseHandler = new UDPRequestResponseHandler(newMaster, takeMyGemsRequest, this);
         try {
             this.transferOwnershipRequestResponseHandler.send();
-            this.transferOwnershipRequestResponseHandler=null;
+            this.transferOwnershipRequestResponseHandler = null;
             return true;
         } catch (InterruptedException e) {
             throw new CommunicationException(e);
@@ -302,7 +302,8 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     break;
                 case "MASTERWHO":
                     MasterWhoRequest masterWhoRequest = MasterWhoRequest.parse(msg);
-                    commandListener.onMasterWhoRequest(masterWhoRequest);
+                    Map<String, Node> masterNodes = commandListener.onMasterWhoRequest(masterWhoRequest);
+                    this.sendMasters(masterWhoRequest.getNode(), masterNodes);
                     break;
                 case "MASTERS":
                     if (this.masterRequestResponseHandler != null) {
