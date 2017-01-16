@@ -49,7 +49,7 @@ public class NodeGUIConsole {
         searchResultTable = new JTable(searchData);
         myFilesTable = new JTable(myFileData);
 
-        List<String> myFiles = node.getFiles();
+        List<String> myFiles = node.getSelfNode().getFiles();
         for (String file :
                 myFiles) {
             myFileData.addRow(new Object[]{file});
@@ -59,7 +59,7 @@ public class NodeGUIConsole {
         JFrame.setDefaultLookAndFeelDecorated(true);
 
         //Create and set up the window.
-        frame = new JFrame("Control Panel: " + node.getUsername() + "@" + node.getIp() + ":" + node.getPort());
+        frame = new JFrame("Control Panel: " + node.getSelfNode().getUsername() + "@" + node.getSelfNode().getIp() + ":" + node.getSelfNode().getPort());
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
