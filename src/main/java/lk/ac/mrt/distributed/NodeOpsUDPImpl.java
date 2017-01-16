@@ -312,7 +312,8 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                     break;
                 case "PROVFOR":
                     ProvidersRequest providersRequest = ProvidersRequest.parse(msg);
-                    this.commandListener.onProvidersRequest(providersRequest);
+                    List<Node> providersList = this.commandListener.onProvidersRequest(providersRequest);
+                    this.sendProviders(providersRequest.getNode(), providersRequest.getWord(), providersList);
                     break;
                 case "PROVS":
                     if (this.providerRequestResponseHandler != null) {

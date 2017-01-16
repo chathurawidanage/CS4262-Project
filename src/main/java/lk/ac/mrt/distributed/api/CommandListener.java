@@ -6,6 +6,7 @@ import lk.ac.mrt.distributed.api.messages.requests.*;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +27,7 @@ public interface CommandListener extends Remote {
 
     Map<String,Node> onMasterWhoRequest(MasterWhoRequest masterWhoRequest);
 
-    void onProvidersRequest(ProvidersRequest providersRequest);
+    List<Node> onProvidersRequest(ProvidersRequest providersRequest);
 
     void onTakeMyGemsRequest(TakeMyGemsRequest takeMyGemsRequest);
 
