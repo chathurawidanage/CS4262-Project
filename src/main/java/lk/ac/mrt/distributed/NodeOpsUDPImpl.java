@@ -323,6 +323,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                 case "TAKEMYGEMS":
                     TakeMyGemsRequest takeMyGemsRequest = TakeMyGemsRequest.parse(msg);
                     this.commandListener.onTakeMyGemsRequest(takeMyGemsRequest);
+                    this.sendOwnershipTaken(takeMyGemsRequest.getOldMaster());
                     break;
                 case "TAKEMYGEMSOK":
                     if (this.transferOwnershipRequestResponseHandler != null) {
