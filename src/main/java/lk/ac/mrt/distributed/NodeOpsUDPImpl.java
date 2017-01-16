@@ -27,11 +27,11 @@ import java.util.concurrent.TimeUnit;
  * @author Chathura Widanage
  */
 public class NodeOpsUDPImpl extends NodeOps implements Runnable {
-    private final Logger logger = LogManager.getLogger(NodeOpsUDPImpl.class);
+    protected final Logger logger = LogManager.getLogger(NodeOpsUDPImpl.class);
 
-    private Node bootstrapServer;
+    protected Node bootstrapServer;
 
-    private DatagramSocket socket;
+    protected DatagramSocket socket;
 
     //RequestResponse Handlers
     private UDPRequestResponseHandler registerRequestResponseHandler;
@@ -40,7 +40,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
     private UDPRequestResponseHandler providerRequestResponseHandler;
     private UDPRequestResponseHandler transferOwnershipRequestResponseHandler;
 
-    private Cache<String, Broadcastable> broadcastableCache;
+    protected Cache<String, Broadcastable> broadcastableCache;
 
     public NodeOpsUDPImpl(String bootstrapServerIp, int bootstrapServerPort) {
         this.bootstrapServer = new Node(bootstrapServerIp, bootstrapServerPort);
