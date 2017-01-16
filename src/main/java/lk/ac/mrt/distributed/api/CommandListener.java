@@ -4,13 +4,16 @@ import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.*;
 
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 /**
  * @author Chathura Widanage
  */
-public interface CommandListener {
+public interface CommandListener extends Remote {
     void onSearchRequest(Node node, String keyword);
 
-    int onLeaveRequest(LeaveRequest leaveRequest);
+    int onLeaveRequest(LeaveRequest leaveRequest) throws RemoteException;
 
     int onJoinRequest(JoinRequest joinRequest);
 

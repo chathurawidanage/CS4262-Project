@@ -1,12 +1,13 @@
 package lk.ac.mrt.distributed.api;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Chathura Widanage
  */
-public class Node {
+public class Node implements Serializable {
     protected int port;
     protected String ip;
     protected String username;
