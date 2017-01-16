@@ -8,8 +8,12 @@ import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
+import lk.ac.mrt.distributed.api.messages.requests.IHaveRequest;
 import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
+import lk.ac.mrt.distributed.api.messages.requests.MasterWhoRequest;
+import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -103,23 +107,39 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
     }
 
     @Override
+    public void broadcastIAmMaster(List<String> wordsList, Set<Node> neighbours) throws CommunicationException {
+        super.broadcastIAmMaster(wordsList, neighbours);
+    }
+
+    @Override
     public void letFalseMasterKnow(String word, Node falseMaster, Node newMaster) throws CommunicationException {
-        super.letFalseMasterKnow(word, falseMaster, newMaster);
+        YouNoMasterRequest youNoMasterRequest = new YouNoMasterRequest(word, newMaster);
+        CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(falseMaster);
+        remoteNodeCommandListener.onYouNoMasterRequest(youNoMasterRequest);
     }
 
     @Override
     public Map<String, Node> askForMasters(Node neighbour) throws CommunicationException {
-        return super.askForMasters(neighbour);
+        MasterWhoRequest masterWhoRequest = new MasterWhoRequest();
+        masterWhoRequest.setNode(selfNode);
+        CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(neighbour);
+        return remoteNodeCommandListener.onMasterWhoRequest(masterWhoRequest);
     }
 
     @Override
     public void sendMasters(Node to, Map<String, Node> masters) throws CommunicationException {
-        super.sendMasters(to, masters);
+        throw new NotImplementedException();//this method is usually not required
+        //super.sendMasters(to, masters);
     }
 
     @Override
     public void iHaveFilesForWord(Node master, String word, List<String> fileNames) throws CommunicationException {
-        super.iHaveFilesForWord(master, word, fileNames);
+        IHaveRequest iHaveRequest = new IHaveRequest();
+        iHaveRequest.setNode(selfNode);
+        iHaveRequest.setFileNames(fileNames);
+        iHaveRequest.setWord(word);
+        CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(master);
+        remoteNodeCommandListener.onIHaveRequest(iHaveRequest);
     }
 
     @Override

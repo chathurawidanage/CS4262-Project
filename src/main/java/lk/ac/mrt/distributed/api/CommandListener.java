@@ -6,6 +6,7 @@ import lk.ac.mrt.distributed.api.messages.requests.*;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Map;
 
 /**
  * @author Chathura Widanage
@@ -23,7 +24,7 @@ public interface CommandListener extends Remote {
 
     void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest);
 
-    void onMasterWhoRequest(MasterWhoRequest masterWhoRequest);
+    Map<String,Node> onMasterWhoRequest(MasterWhoRequest masterWhoRequest);
 
     void onProvidersRequest(ProvidersRequest providersRequest);
 
