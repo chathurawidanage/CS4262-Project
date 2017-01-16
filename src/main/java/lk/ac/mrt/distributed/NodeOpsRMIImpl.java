@@ -8,10 +8,7 @@ import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
-import lk.ac.mrt.distributed.api.messages.requests.IHaveRequest;
-import lk.ac.mrt.distributed.api.messages.requests.JoinRequest;
-import lk.ac.mrt.distributed.api.messages.requests.MasterWhoRequest;
-import lk.ac.mrt.distributed.api.messages.requests.YouNoMasterRequest;
+import lk.ac.mrt.distributed.api.messages.requests.*;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -144,12 +141,17 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
 
     @Override
     public List<Node> getProvidersForWord(String word, Node master) throws CommunicationException {
+        ProvidersRequest providersRequest = new ProvidersRequest();
+        providersRequest.setWord(word);
+        providersRequest.setNode(selfNode);
+        CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(master);
+        remoteNodeCommandListener.onProvidersRequest(providersRequest);
         return super.getProvidersForWord(word, master);
     }
 
     @Override
     public void sendProviders(Node to, String word, List<Node> providers) throws CommunicationException {
-        super.sendProviders(to, word, providers);
+        throw new NotImplementedException();//this method is not required in RMI version
     }
 
     @Override
