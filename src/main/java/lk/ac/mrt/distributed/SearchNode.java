@@ -128,7 +128,7 @@ public class SearchNode extends Node implements CommandListener {
         }
 
         try {
-            if(iAmMasterFileTokens.size() > 0)
+            if (iAmMasterFileTokens.size() > 0)
                 nodeOps.broadcastIAmMaster(iAmMasterFileTokens, this.neighbours);
         } catch (CommunicationException e) {
             e.printStackTrace(); //todo handle this
@@ -214,7 +214,7 @@ public class SearchNode extends Node implements CommandListener {
 
     @Override
     public void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest) {
-        if(youNoMasterRequest.getNewMaster().equals(this)){
+        if (youNoMasterRequest.getNewMaster().equals(this)) {
             System.out.println("SHIT HAS HAPPENED");
             return;
         }
@@ -243,29 +243,25 @@ public class SearchNode extends Node implements CommandListener {
     }
 
     @Override
-    public void onMasterWhoRequest(MasterWhoRequest masterWhoRequest) {
+    public Map<String, Node> onMasterWhoRequest(MasterWhoRequest masterWhoRequest) {
+        return this.masters;/*
         Node askingNode = masterWhoRequest.getNode();
         try {
             this.nodeOps.sendMasters(askingNode, this.masters);
         } catch (CommunicationException e) {//todo ugly try catch
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Override
-    public void onProvidersRequest(ProvidersRequest providersRequest) {
+    public List<Node> onProvidersRequest(ProvidersRequest providersRequest) {
         String word = providersRequest.getWord();
-        Node requestingNode = providersRequest.getNode();
         Set<Node> providers = this.resourceProviders.get(word);
-        try {
-            if (providers == null) {
-                logger.warn("Null provider request. Possible error in protocol");
-                providers = new HashSet<>();
-            }
-            this.nodeOps.sendProviders(requestingNode, word, new ArrayList<>(providers));
-        } catch (CommunicationException e) {//todo ugly try catch
-            e.printStackTrace();
+        if (providers == null) {
+            logger.warn("Null provider request. Possible error in protocol");
+            providers = new HashSet<>();
         }
+        return new ArrayList<>(providers);
     }
 
     @Override
@@ -308,7 +304,7 @@ public class SearchNode extends Node implements CommandListener {
         Set<String> myKeyset = resourceProviders.keySet();
         String[] temp = query.trim().split("\\+s");
         for (String t : temp) {
-            if(!worldKeyset.contains(t) && !myKeyset.contains(t)) //this is an alien key, we have no files on this key
+            if (!worldKeyset.contains(t) && !myKeyset.contains(t)) //this is an alien key, we have no files on this key
                 return searchResults; //return empty result, without doing any network operations
             queryTokens.add(t);
         }
@@ -366,8 +362,8 @@ public class SearchNode extends Node implements CommandListener {
                 } catch (CommunicationException e) {//todo ugly try catch
                     e.printStackTrace();
                 }
-            }else{
-                this.masters.put(word,master);
+            } else {
+                this.masters.put(word, master);
             }
         }
     }
