@@ -20,9 +20,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Chathura Widanage
@@ -56,7 +54,7 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
         Registry registry = null;
         try {
             registry = LocateRegistry.createRegistry(this.selfNode.getPort());
-            CommandListener commandListener = (CommandListener) UnicastRemoteObject.exportObject(this.commandListener, 0);
+            CommandListener commandListener = (CommandListener) UnicastRemoteObject.exportObject(this.commandListener, new Random().nextInt(5000));
             registry.bind("ops", commandListener);
             return registerResponse;
         } catch (RemoteException | AlreadyBoundException e) {
@@ -68,11 +66,21 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
     public void join(Set<Node> neighbours) throws CommunicationException {
         JoinRequest joinRequest = new JoinRequest();
         joinRequest.setNode(selfNode);
+        boolean atLeastOneDid = false;
+        Exception ex = null;
         for (Node nei : neighbours) {
             CommandListener remoteNodeCommandListener = getRemoteNodeCommandListener(nei);
-            remoteNodeCommandListener.onJoinRequest(joinRequest);
+            try {
+                remoteNodeCommandListener.onJoinRequest(joinRequest);
+                atLeastOneDid = true;
+            } catch (RemoteException e) {
+                logger.error("Error in joining", e);
+                ex = e;
+                //just skip so at least one will succeed
+            }
         }
-        super.join(neighbours);
+        if (!atLeastOneDid)
+            throw new CommunicationException(ex);
     }
 
     @Override
@@ -86,33 +94,54 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
         if (oldBroadcastable == null || !oldBroadcastable.isBroadcasted()) {//prevent rebroadcasting same message
             //narrowcasting to all neighbours -> broadcasting to whole network
             broadcastableCache.put(broadcastable.getMessageId(), broadcastable);//put this first to avoid receiving message again to me from a neighbour
+            boolean atLeastOneDid = false;
+            Exception ex = null;
             for (Node n : neighbours) {//todo enclose in try catch to prevent breaking for loop
                 CommandListener remoteNodeCommandListener = getRemoteNodeCommandListener(n);
-                if (broadcastable instanceof MasterBroadcast) {
-                    remoteNodeCommandListener.onMasterBroadcast((MasterBroadcast) broadcastable);
-                } else if (broadcastable instanceof MasterChangeBroadcast) {
-                    remoteNodeCommandListener.onMasterChangeBroadcast((MasterChangeBroadcast) broadcastable);
+                try {
+                    if (broadcastable instanceof MasterBroadcast) {
+                        remoteNodeCommandListener.onMasterBroadcast((MasterBroadcast) broadcastable);
+                        atLeastOneDid = true;
+                    } else if (broadcastable instanceof MasterChangeBroadcast) {
+                        remoteNodeCommandListener.onMasterChangeBroadcast((MasterChangeBroadcast) broadcastable);
+                        atLeastOneDid = true;
+                    }
+                } catch (RemoteException e) {
+                    logger.error("Error in broadcasting", e);
+                    ex = e;
                 }
             }
-            broadcastable.setBroadcasted();
+            if (atLeastOneDid || neighbours.size() == 0) {
+                broadcastable.setBroadcasted();
+            } else {
+                throw new CommunicationException(ex);
+            }
         }
     }
 
     @Override
     public void changeMasterBroadcast(String word, Node oldMaster, Node newMaster, Set<Node> to) throws CommunicationException {
-        super.changeMasterBroadcast(word, oldMaster, newMaster, to);
+        MasterChangeBroadcast masterChangeBroadcast =
+                new MasterChangeBroadcast(UUID.randomUUID().toString(), word, oldMaster, newMaster);
+        this.broadcast(masterChangeBroadcast, to);
     }
 
     @Override
     public void broadcastIAmMaster(List<String> wordsList, Set<Node> neighbours) throws CommunicationException {
-        super.broadcastIAmMaster(wordsList, neighbours);
+        MasterBroadcast masterBroadcast = new MasterBroadcast(UUID.randomUUID().toString(), selfNode);
+        masterBroadcast.setWordsList(wordsList);
+        this.broadcast(masterBroadcast, neighbours);
     }
 
     @Override
     public void letFalseMasterKnow(String word, Node falseMaster, Node newMaster) throws CommunicationException {
         YouNoMasterRequest youNoMasterRequest = new YouNoMasterRequest(word, newMaster);
         CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(falseMaster);
-        remoteNodeCommandListener.onYouNoMasterRequest(youNoMasterRequest);
+        try {
+            remoteNodeCommandListener.onYouNoMasterRequest(youNoMasterRequest);
+        } catch (RemoteException e) {
+            throw new CommunicationException(e);
+        }
     }
 
     @Override
@@ -120,7 +149,11 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
         MasterWhoRequest masterWhoRequest = new MasterWhoRequest();
         masterWhoRequest.setNode(selfNode);
         CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(neighbour);
-        return remoteNodeCommandListener.onMasterWhoRequest(masterWhoRequest);
+        try {
+            return remoteNodeCommandListener.onMasterWhoRequest(masterWhoRequest);
+        } catch (RemoteException e) {
+            throw new CommunicationException(e);
+        }
     }
 
     @Override
@@ -136,7 +169,11 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
         iHaveRequest.setFileNames(fileNames);
         iHaveRequest.setWord(word);
         CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(master);
-        remoteNodeCommandListener.onIHaveRequest(iHaveRequest);
+        try {
+            remoteNodeCommandListener.onIHaveRequest(iHaveRequest);
+        } catch (RemoteException e) {
+            throw new CommunicationException(e);
+        }
     }
 
     @Override
@@ -145,8 +182,11 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
         providersRequest.setWord(word);
         providersRequest.setNode(selfNode);
         CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(master);
-        remoteNodeCommandListener.onProvidersRequest(providersRequest);
-        return super.getProvidersForWord(word, master);
+        try {
+            return remoteNodeCommandListener.onProvidersRequest(providersRequest);
+        } catch (RemoteException e) {
+            throw new CommunicationException(e);
+        }
     }
 
     @Override
@@ -156,19 +196,37 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
 
     @Override
     public boolean transferResourceOwnership(String word, Node newMaster, List<Node> providers) throws CommunicationException {
-        return super.transferResourceOwnership(word, newMaster, providers);
+        TakeMyGemsRequest takeMyGemsRequest = new TakeMyGemsRequest();
+        takeMyGemsRequest.setWord(word);
+        takeMyGemsRequest.setProviders(providers);
+        takeMyGemsRequest.setOldMaster(selfNode);
+
+        CommandListener remoteNodeCommandListener = this.getRemoteNodeCommandListener(newMaster);
+        try {
+            remoteNodeCommandListener.onTakeMyGemsRequest(takeMyGemsRequest);
+            return true;
+        } catch (RemoteException e) {
+            throw new CommunicationException(e);
+        }
     }
 
     @Override
     public void sendOwnershipTaken(Node oldMaster) throws CommunicationException {
-        super.sendOwnershipTaken(oldMaster);
+        throw new NotImplementedException();//not required in RMI version
     }
+
+    private HashMap<Node, CommandListener> registryHashMap = new HashMap<>();
 
     private CommandListener getRemoteNodeCommandListener(Node node) throws CommunicationException {
         Registry registry = null;
         try {
+            if (registryHashMap.containsKey(node)) {
+                return registryHashMap.get(node);
+            }
             registry = LocateRegistry.getRegistry(node.getIp(), node.getPort());
-            return (CommandListener) registry.lookup("ops");
+            CommandListener commandListener = (CommandListener) registry.lookup("ops");
+            registryHashMap.put(node, commandListener);
+            return commandListener;
         } catch (RemoteException | NotBoundException e) {
             logger.error("Error in obtaining remote command listener", e);
             throw new CommunicationException(e);
