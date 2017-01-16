@@ -22,7 +22,7 @@ import java.util.*;
 /**
  * @author Chathura Widanage
  */
-public class SearchNode extends Node implements CommandListener {
+public class SearchNode implements CommandListener {
     private final static Logger logger = LogManager.getLogger(SearchNode.class);
 
     private Set<Node> neighbours;
@@ -31,20 +31,29 @@ public class SearchNode extends Node implements CommandListener {
 
     private NodeOps nodeOps;
 
+    private Node selfNode;//todo can't extend this class with Node due to RMI restrictions
+
     public SearchNode(String username, String myIp, int myPort, NodeOps nodeOps) throws SocketException, NullCommandListenerException, BootstrapException {
-        super(myIp, myPort);
-        this.setUsername(username);
+        this.selfNode=new Node(myIp,myPort);
+        this.selfNode.setUsername(username);
+
         this.neighbours = new HashSet<>();
         this.masters = new HashMap<>();
         this.resourceProviders = new HashMap<>();
 
         this.nodeOps = nodeOps;
         this.nodeOps.setCommandListener(this);
-        this.nodeOps.start(this);
+
+        this.nodeOps.start(selfNode);
+        //this.nodeOps.start(this);//todo send a copy to prevent RMI class cast
 
         //get random set of files
         ArrayList<String> randomFileNames = FileNamesGenerator.getRandomFileNames();
-        this.files.addAll(randomFileNames);
+        this.selfNode.getFiles().addAll(randomFileNames);
+    }
+
+    public Node getSelfNode() {
+        return selfNode;
     }
 
     public void bootstrap() throws SocketException, UnknownHostException, CommunicationException, RegistrationException {
@@ -85,7 +94,7 @@ public class SearchNode extends Node implements CommandListener {
         HashSet<String> files;
         String[] tokens;
 
-        for (String file : this.files) { //iterate through all files and build the inverted file index
+        for (String file : this.selfNode.getFiles()) { //iterate through all files and build the inverted file index
             if (file != null) {
                 tokens = file.split("_");
                 for (String token : tokens) {
@@ -117,13 +126,13 @@ public class SearchNode extends Node implements CommandListener {
                 }
             } else {
                 iAmMasterFileTokens.add(fileToken);
-                this.masters.put(fileToken, this);//set me as master
+                this.masters.put(fileToken, this.selfNode);//set me as master
                 resoureceEndpoints = this.resourceProviders.get(fileToken);
                 if (resoureceEndpoints == null) {
                     resoureceEndpoints = new HashSet<>();
                     this.resourceProviders.put(fileToken, resoureceEndpoints);
                 }
-                resoureceEndpoints.add(this);
+                resoureceEndpoints.add(this.selfNode);
             }
         }
 
@@ -233,7 +242,7 @@ public class SearchNode extends Node implements CommandListener {
         try {
             this.nodeOps.changeMasterBroadcast(
                     youNoMasterRequest.getWord(),
-                    this,
+                    this.selfNode,
                     youNoMasterRequest.getNewMaster(),
                     this.neighbours
             );
@@ -274,11 +283,6 @@ public class SearchNode extends Node implements CommandListener {
             this.resourceProviders.put(word, nodes);
         }
         nodes.addAll(providers);
-        try {
-            this.nodeOps.sendOwnershipTaken(takeMyGemsRequest.getOldMaster());
-        } catch (CommunicationException e) {//todo ugly try catch
-            e.printStackTrace();
-        }
     }
 
     @Override
