@@ -13,23 +13,23 @@ import java.util.Map;
  * @author Chathura Widanage
  */
 public interface CommandListener extends Remote {
-    void onSearchRequest(Node node, String keyword);
+    void onSearchRequest(Node node, String keyword) throws RemoteException;
 
     int onLeaveRequest(LeaveRequest leaveRequest) throws RemoteException;
 
-    int onJoinRequest(JoinRequest joinRequest);
+    int onJoinRequest(JoinRequest joinRequest) throws RemoteException;
 
-    void onMasterBroadcast(MasterBroadcast masterBroadcast);
+    void onMasterBroadcast(MasterBroadcast masterBroadcast) throws RemoteException;
 
-    void onMasterChangeBroadcast(MasterChangeBroadcast masterChangeBroadcast);
+    void onMasterChangeBroadcast(MasterChangeBroadcast masterChangeBroadcast) throws RemoteException;
 
-    void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest);
+    void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest) throws RemoteException;
 
-    Map<String,Node> onMasterWhoRequest(MasterWhoRequest masterWhoRequest);
+    Map<String,Node> onMasterWhoRequest(MasterWhoRequest masterWhoRequest) throws RemoteException;
 
-    List<Node> onProvidersRequest(ProvidersRequest providersRequest);
+    List<Node> onProvidersRequest(ProvidersRequest providersRequest) throws RemoteException;
 
-    void onTakeMyGemsRequest(TakeMyGemsRequest takeMyGemsRequest);
+    void onTakeMyGemsRequest(TakeMyGemsRequest takeMyGemsRequest) throws RemoteException;
 
-    void onIHaveRequest(IHaveRequest iHaveRequest);
+    void onIHaveRequest(IHaveRequest iHaveRequest) throws RemoteException;
 }
