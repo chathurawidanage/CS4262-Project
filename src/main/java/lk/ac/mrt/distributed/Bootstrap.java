@@ -8,6 +8,7 @@ import lk.ac.mrt.distributed.console.NodeGUIConsole;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -19,9 +20,21 @@ public class Bootstrap {
     private static NodeGUIConsole consoleGUI;
     public static void main(String[] args) throws SocketException {
         //NodeOpsUDPImpl nodeOpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
-        NodeOpsRMIImpl nodeOps = new NodeOpsRMIImpl("127.0.0.1", 55555);
+        if(args.length != 4)
+            throw new IllegalArgumentException("Invalid number of arguments. " +
+                    "There should be 4 arguments: bs-server-ip, bs-server-port, client-username, client-port");
+
+        String bsServerIp = args[0];
+        int bsServerPort = Integer.parseInt(args[1]);
+        String username = args[2];
+        int myPort = Integer.parseInt(args[3]);
+
+        NodeOpsRMIImpl nodeOps = new NodeOpsRMIImpl(bsServerIp, bsServerPort);
+
         try {
-            final SearchNode searchNode = new SearchNode("chathura3", "127.0.0.1", 44443, nodeOps);
+            String ip = InetAddress.getLocalHost().getHostAddress();
+            logger.info("Obtained host IP: " + ip);
+            final SearchNode searchNode = new SearchNode(username, ip, myPort, nodeOps);
             searchNode.bootstrap();
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
