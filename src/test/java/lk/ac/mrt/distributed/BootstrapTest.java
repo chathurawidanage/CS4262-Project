@@ -24,7 +24,7 @@ public class BootstrapTest extends TestCase {
             }
         })).start();
 
-        int nodecount = 5;
+        int nodecount = 2;
         int node_start_port = 44446;
         for (int i = 0; i < nodecount; i++) {
             System.out.println("Starting node 1");
@@ -35,7 +35,7 @@ public class BootstrapTest extends TestCase {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     NodeGUIConsole nc1 = new NodeGUIConsole(searchNode);
-                    nc1.display();
+                    nc1.start();
                 }
             });
             Thread.sleep(200);

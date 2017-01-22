@@ -19,15 +19,6 @@ public class RealNetworkTest extends TestCase{
     public void realTest() throws InterruptedException, UnknownHostException, RegistrationException, CommunicationException, SocketException, NullCommandListenerException, BootstrapException {
         String bootstrapServerIp = "192.168.43.138";
         //start a Bootstrap Server
-        if(bootstrapServerIp == null) {
-            bootstrapServerIp = "127.0.0.1";
-            (new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    BootstrapServer.start(55555);
-                }
-            })).start();
-        }
 
         int nodecount = 1;
         int node_start_port = 44446;
@@ -40,7 +31,7 @@ public class RealNetworkTest extends TestCase{
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     NodeGUIConsole nc1 = new NodeGUIConsole(searchNode);
-                    nc1.display();
+                    nc1.start();
                 }
             });
             Thread.sleep(200);

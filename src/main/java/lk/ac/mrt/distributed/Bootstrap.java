@@ -1,15 +1,20 @@
 package lk.ac.mrt.distributed;
 
+import lk.ac.mrt.distributed.api.NodeOps;
 import lk.ac.mrt.distributed.api.exceptions.BootstrapException;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 import lk.ac.mrt.distributed.api.exceptions.NullCommandListenerException;
 import lk.ac.mrt.distributed.api.exceptions.registration.RegistrationException;
+import lk.ac.mrt.distributed.console.Console;
 import lk.ac.mrt.distributed.console.NodeGUIConsole;
+import lk.ac.mrt.distributed.console.TextConsole;
+import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Collection;
 
 /**
  * @author Chathura Widanage
@@ -18,24 +23,66 @@ public class Bootstrap {
     private static final Logger logger = LogManager.getLogger(Bootstrap.class);
     private static NodeGUIConsole consoleGUI;
     public static void main(String[] args) throws SocketException {
-        //NodeOpsUDPImpl nodeOpsUDP = new NodeOpsUDPImpl("127.0.0.1", 55555);
-        NodeOpsRMIImpl nodeOps = new NodeOpsRMIImpl("127.0.0.1", 55555);
+        boolean useRMI = false;
+        String bootServerIP = "127.0.0.1";
+        int bootServerPort = 55555;
+        boolean useGUI = true;
+        String username = "kuiper";
+        String myIP = "127.0.0.1";
+        int myPort = 444443;
+
+        NodeOps nodeOps;
+        Console console;
+        final SearchNode searchNode;
+        Options commandlineOptions = new Options();
+        commandlineOptions.addOption("r", "rmi", false, "use RMI instead of plain text UDP for comms");
+        commandlineOptions.addOption("b", "bootstrap", true, "ip and port of bootstrap server in ip:port format");
+        commandlineOptions.addOption("a", "addr", true, "ip and port of this node in ip:port format");
+        commandlineOptions.addOption("c", "console", false, "use console instead of GUI");
+        commandlineOptions.addOption("u", "username", true, "the username for the node");
         try {
-            final SearchNode searchNode = new SearchNode("chathura3", "127.0.0.1", 44443, nodeOps);
+            CommandLine cmd = (new DefaultParser()).parse(commandlineOptions, args);
+
+            if(cmd.hasOption("b")) {
+                String[] str = cmd.getOptionValue("b").split(":");
+                bootServerIP = str[0];
+                bootServerPort = Integer.parseInt(str[1]);
+            }
+            if(cmd.hasOption("a")) {
+                String[] str = cmd.getOptionValue("b").split(":");
+                myIP = str[0];
+                myPort = Integer.parseInt(str[1]);
+            }
+            if (cmd.hasOption("u")) {
+                username = cmd.getOptionValue("u");
+            }
+            if(cmd.hasOption("r")) {
+                nodeOps = new NodeOpsRMIImpl(bootServerIP, bootServerPort);
+            } else
+                nodeOps = new NodeOpsUDPImpl(bootServerIP, bootServerPort);
+
+            searchNode = new SearchNode(username, myIP, myPort, nodeOps);
+
+            if (cmd.hasOption("c")) {
+                console = new TextConsole(searchNode);
+            } else {
+                console = new NodeGUIConsole(searchNode);
+            }
+
+        } catch (Exception e) {
+            Collection<Option> options = commandlineOptions.getOptions();
+            for (Option opt :
+                    options) {
+                System.out.println(opt.getOpt() + ", " + opt.getLongOpt() + ": " + opt.getDescription());
+            }
+            e.printStackTrace();
+            return;
+        }
+
+        try {
             searchNode.bootstrap();
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    consoleGUI = new NodeGUIConsole(searchNode);
-                    consoleGUI.display();
-                }
-            });
-        } catch (NullCommandListenerException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (BootstrapException e) {
-            e.printStackTrace();
-        } catch (CommunicationException e) {
+            console.start();
+        } catch (UnknownHostException | CommunicationException e) {
             e.printStackTrace();
         } catch (RegistrationException e) {
             logger.error("Bootstrapping failed", e);

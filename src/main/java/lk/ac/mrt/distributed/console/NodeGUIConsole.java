@@ -14,8 +14,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class NodeGUIConsole {
-    private final static Logger logger = LogManager.getLogger(SearchNode.class);
+public class NodeGUIConsole extends Console{
+    private final static Logger logger = LogManager.getLogger(NodeGUIConsole.class);
 
     private JButton btnSearch;
     private JButton btnUnregister;
@@ -30,11 +30,9 @@ public class NodeGUIConsole {
     private DefaultTableModel myFileData;
 
 
-    private SearchNode node;
-
     public NodeGUIConsole(SearchNode node) {
-        this.node = node;
-        final SearchNode nodeRef = node;
+        super(node);
+
         btnSearch = new JButton("SEARCH");
         btnUnregister = new JButton("UNREGISTER");
         btnLeave = new JButton("LEAVE");
@@ -66,8 +64,8 @@ public class NodeGUIConsole {
             public void windowClosed(WindowEvent e) {
                 super.windowClosed(e);
                 try {
-                    nodeRef.leave();
-                    nodeRef.unregister();
+                    leave();
+                    unregister();
                 } catch (CommunicationException e1) {
                     e1.printStackTrace();
                 }
@@ -114,7 +112,7 @@ public class NodeGUIConsole {
                 btnSearch.setEnabled(false);
                 logger.info("Search invoked query: " + txtSearch.getText());
                 btnSearch.setName("SEARCHING");
-                populateSearchResult(node.search(txtSearch.getText().trim()));
+                populateSearchResult(search(txtSearch.getText().trim()));
                 btnSearch.setEnabled(true);
                 btnSearch.setName("SEARCH");
                 txtSearch.selectAll();
@@ -145,7 +143,7 @@ public class NodeGUIConsole {
                 try {
                     btnLeave.setEnabled(false);
                     logger.info("Leave Invoked");
-                    node.leave();
+                    leave();
                     JOptionPane.showMessageDialog(frame, "Leave Successful!");
                 } catch (CommunicationException e1) {
                     JOptionPane.showMessageDialog(frame, "Leave failed: " + e1.getMessage());
@@ -160,7 +158,7 @@ public class NodeGUIConsole {
             public void actionPerformed(ActionEvent e) {
                 btnUnregister.setEnabled(false);
                 try {
-                    node.unregister();
+                    unregister();
                     logger.info("Unregister Invoked");
                     JOptionPane.showMessageDialog(frame, "Unregistered!");
                 } catch (CommunicationException e1) {
@@ -176,12 +174,17 @@ public class NodeGUIConsole {
      * Create the GUI and show it. For thread safety, this method should be
      * invoked from the event-dispatching thread.
      */
-    public void display() {
-        //Set up the content pane.
-        addComponentsToPane(frame.getContentPane());
-        //Size and display the window.
-        frame.setSize(btnUnregister.getX() + btnUnregister.getWidth() + 10, 500);
-        frame.setVisible(true);
+    @Override
+    public void start() {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                //Set up the content pane.
+                addComponentsToPane(frame.getContentPane());
+                //Size and display the window.
+                frame.setSize(btnUnregister.getX() + btnUnregister.getWidth() + 10, 500);
+                frame.setVisible(true);
+            }
+        });
     }
 
     private void populateSearchResult(List<Pair<String, Node>> resourceLocations) {
