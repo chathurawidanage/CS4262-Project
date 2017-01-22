@@ -16,7 +16,8 @@ public class TextConsole extends Console {
 
     public TextConsole(SearchNode mynode) {
         super(mynode);
-        nodeHandle = mynode.getSelfNode().getUsername() + "@" + mynode.getSelfNode().getIp();
+        nodeHandle = mynode.getSelfNode().getUsername() + "@" + mynode.getSelfNode().getIp() + ":" +
+        mynode.getSelfNode().getPort();
     }
 
     @Override
@@ -37,18 +38,32 @@ public class TextConsole extends Console {
         );
         while (true) {
             System.out.print(nodeHandle + " $ ");
-            command = sc.next().toLowerCase().trim();
+            command = sc.nextLine().toLowerCase().trim();
             starttime = System.currentTimeMillis();
-            if (command.startsWith("EXIT")) {
+            if (command.trim().isEmpty())
+                continue;
+            if (command.startsWith("exit")) {
                 return;
+            } else if (command.startsWith("info")) {
+                System.out.println("Node IP : " + mynode.getSelfNode().getIp());
+                System.out.println("Node port: " + mynode.getSelfNode().getPort());
+                System.out.println("Node username : " + mynode.getSelfNode().getUsername());
+                System.out.println("File List:\n");
+                for (String file :
+                        myfiles) {
+                    System.out.println(file);
+                }
+                System.out.println();
             } else if (command.startsWith("search ")) {
 
                 List<Pair<String, Node>> results = search(command.substring("search ".length()));
-                System.out.println(results.size() + " matches found in " + (System.currentTimeMillis() - starttime)
-                        + "\n");
+                System.out.println(results.size() + " matche(s) found in " + (System.currentTimeMillis() - starttime)
+                        + " ms\n");
                 for (Pair<String, Node> result :
                         results) {
-                    System.out.println(result.getValue().getIp() + " \t" + result.getValue());
+                    Object filenam = result.getValue();
+                    Object nodeaddrr = result.getKey();
+                    System.out.println(nodeaddrr + "\t\t" + filenam);
                 }
             } else if (command.startsWith("leave")) {
                 try {
