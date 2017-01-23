@@ -64,12 +64,14 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
     @Override
     public UnregisterResponse unregister() throws CommunicationException {
         try {
-            this.registry.unbind("ops");
-            UnicastRemoteObject.unexportObject(this.commandListener, true);
+            if (this.registry != null) {
+                this.registry.unbind("ops");
+                UnicastRemoteObject.unexportObject(this.commandListener, true);
 
-            //restart udp listener
-            udpThread = new Thread(this);
-            udpThread.start();
+                //restart udp listener
+                udpThread = new Thread(this);
+                udpThread.start();
+            }
         } catch (Exception e) {
             logger.error("Error in stopping rmi server", e);
         }

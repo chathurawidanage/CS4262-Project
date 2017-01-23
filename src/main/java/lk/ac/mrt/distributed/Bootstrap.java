@@ -103,7 +103,6 @@ public class Bootstrap {
         });
 
         try {
-
             searchNode.bootstrap();
             Runtime.getRuntime().addShutdownHook(exitHook);
             console.start();
