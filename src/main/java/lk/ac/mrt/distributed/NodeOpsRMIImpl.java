@@ -10,13 +10,12 @@ import lk.ac.mrt.distributed.api.messages.broadcasts.MasterBroadcast;
 import lk.ac.mrt.distributed.api.messages.broadcasts.MasterChangeBroadcast;
 import lk.ac.mrt.distributed.api.messages.requests.*;
 import lk.ac.mrt.distributed.api.messages.responses.RegisterResponse;
+import lk.ac.mrt.distributed.api.messages.responses.UnregisterResponse;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -27,6 +26,7 @@ import java.util.*;
  */
 public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
     private Thread udpThread;
+    private Registry registry = null;
 
     public NodeOpsRMIImpl(String bootstrapServerIp, int bootstrapServerPort) {
         super(bootstrapServerIp, bootstrapServerPort);
@@ -51,7 +51,6 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
 
         this.socket.close();
 
-        Registry registry = null;
         try {
             registry = LocateRegistry.createRegistry(this.selfNode.getPort());
             CommandListener commandListener = (CommandListener) UnicastRemoteObject.exportObject(this.commandListener, new Random().nextInt(5000));
@@ -60,6 +59,21 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
         } catch (RemoteException | AlreadyBoundException e) {
             throw new CommunicationException(e);
         }
+    }
+
+    @Override
+    public UnregisterResponse unregister() throws CommunicationException {
+        try {
+            this.registry.unbind("ops");
+            UnicastRemoteObject.unexportObject(this.commandListener, true);
+
+            //restart udp listener
+            udpThread = new Thread(this);
+            udpThread.start();
+        } catch (Exception e) {
+            logger.error("Error in stopping rmi server", e);
+        }
+        return super.unregister();
     }
 
     @Override
