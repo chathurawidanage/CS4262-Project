@@ -68,7 +68,8 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
                 this.registry.unbind("ops");
                 UnicastRemoteObject.unexportObject(this.commandListener, true);
 
-                //restart udp listener
+                //restart udp listener - to communicate with bootstrap server
+                this.socket = new DatagramSocket(this.selfNode.getPort());
                 udpThread = new Thread(this);
                 udpThread.start();
             }
