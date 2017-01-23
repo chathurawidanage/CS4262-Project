@@ -269,7 +269,7 @@ public class NodeOpsUDPImpl extends NodeOps implements Runnable {
                         registerRequestResponseHandler.setResponse(msg);
                     }
                     break;
-                case "UNREGOK":
+                case "UNROK":
                     logger.debug("UNREGOK revieved");
                     if (this.unregisterRequestResponseHandler != null) {
                         this.unregisterRequestResponseHandler.setResponse(msg);
