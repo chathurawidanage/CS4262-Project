@@ -103,8 +103,8 @@ public class Bootstrap {
         });
 
         try {
-            searchNode.bootstrap();
             Runtime.getRuntime().addShutdownHook(exitHook);
+            searchNode.bootstrap();
             console.start();
         } catch (UnknownHostException | CommunicationException e) {
             e.printStackTrace();
