@@ -74,7 +74,16 @@ public class SearchNode implements CommandListener {
     }
 
     public void leave() throws CommunicationException {
-        this.nodeOps.leave(neighbours);
+        Set<Node> leaveNotifiers=new HashSet<>(neighbours);
+        List<String> files = this.selfNode.getFiles();
+        for(String file:files){
+            String[] split = file.split("_");
+            for(String token:split){
+                leaveNotifiers.add(this.masters.get(token));
+            }
+        }
+
+        this.nodeOps.leave(leaveNotifiers);//notify neighbours and masters
 
         //if leave OK transfer ownership if I am master
         if (neighbours.size() > 0) {
@@ -84,13 +93,16 @@ public class SearchNode implements CommandListener {
                 Node newMaster = new ArrayList<>(neighbours).get(new Random().nextInt(neighbours.size()));
                 logger.info("Transferring ownership of {}", word);
                 try {
+                    ArrayList<Node> nodes = new ArrayList<>(this.resourceProviders.get(word));
+                    nodes.remove(this);//remove me
+
                     boolean transfered = this.nodeOps.transferResourceOwnership(
                             word,
                             newMaster,
-                            new ArrayList<>(this.resourceProviders.get(word))
+                            nodes
                     );
                 } catch (CommunicationException e) {
-                    e.printStackTrace();
+                    logger.error("Error in transferring resource ownership", e);
                 }
                 //resourceProviders.remove(youNoMasterRequest.getWord());
                 //masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
@@ -187,6 +199,12 @@ public class SearchNode implements CommandListener {
         Node node = leaveRequest.getNode();
         if (node != null) {
             this.neighbours.remove(leaveRequest.getNode());
+
+            //also leave if I have record as this node is a resource provider
+            Iterator<String> iterator = this.resourceProviders.keySet().iterator();
+            while (iterator.hasNext()) {
+                this.resourceProviders.get(iterator.next()).remove(leaveRequest.getNode());
+            }
             return 0;
         } else {//rare case
             logger.error("Error occurred while leaving node. Node was null in the request");

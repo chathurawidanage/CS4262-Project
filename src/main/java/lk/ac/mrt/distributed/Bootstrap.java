@@ -31,7 +31,7 @@ public class Bootstrap {
         boolean useGUI = true;
         String username = "kuiper2";
         String myIP = "127.0.0.1";
-        int myPort = 44445;
+        int myPort = 44446;
 
         NodeOps nodeOps;
         Console console;
