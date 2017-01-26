@@ -26,12 +26,12 @@ public class Bootstrap {
 
     public static void main(String[] args) throws SocketException {
         boolean useRMI = false;
-        String bootServerIP = "127.0.0.1";
+        String bootServerIP = "188.166.213.238";
         int bootServerPort = 55555;
         boolean useGUI = true;
-        String username = "kuiper";
+        String username = "kuiper2";
         String myIP = "127.0.0.1";
-        int myPort = 44443;
+        int myPort = 44445;
 
         NodeOps nodeOps;
         Console console;

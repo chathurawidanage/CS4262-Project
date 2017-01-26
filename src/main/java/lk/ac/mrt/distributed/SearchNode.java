@@ -77,31 +77,33 @@ public class SearchNode implements CommandListener {
         this.nodeOps.leave(neighbours);
 
         //if leave OK transfer ownership if I am master
-        Iterator<String> iterator = resourceProviders.keySet().iterator();
-        while (iterator.hasNext()) {
-            String word = iterator.next();
-            Node newMaster = new ArrayList<>(neighbours).get(new Random().nextInt(neighbours.size()));
-            logger.info("Transferring ownership of {}", word);
-            try {
-                boolean transfered = this.nodeOps.transferResourceOwnership(
-                        word,
-                        newMaster,
-                        new ArrayList<>(this.resourceProviders.get(word))
-                );
-            } catch (CommunicationException e) {
-                e.printStackTrace();
-            }
-            //resourceProviders.remove(youNoMasterRequest.getWord());
-            //masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
-            try {
-                this.nodeOps.changeMasterBroadcast(
-                        word,
-                        this.selfNode,
-                        newMaster,
-                        this.neighbours
-                );
-            } catch (CommunicationException e) {//todo ugly try catch here
-                logger.error("Failed to transfer ownership of {}",word,e);
+        if (neighbours.size() > 0) {
+            Iterator<String> iterator = resourceProviders.keySet().iterator();
+            while (iterator.hasNext()) {
+                String word = iterator.next();
+                Node newMaster = new ArrayList<>(neighbours).get(new Random().nextInt(neighbours.size()));
+                logger.info("Transferring ownership of {}", word);
+                try {
+                    boolean transfered = this.nodeOps.transferResourceOwnership(
+                            word,
+                            newMaster,
+                            new ArrayList<>(this.resourceProviders.get(word))
+                    );
+                } catch (CommunicationException e) {
+                    e.printStackTrace();
+                }
+                //resourceProviders.remove(youNoMasterRequest.getWord());
+                //masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
+                try {
+                    this.nodeOps.changeMasterBroadcast(
+                            word,
+                            this.selfNode,
+                            newMaster,
+                            this.neighbours
+                    );
+                } catch (CommunicationException e) {//todo ugly try catch here
+                    logger.error("Failed to transfer ownership of {}", word, e);
+                }
             }
         }
 
@@ -330,44 +332,54 @@ public class SearchNode implements CommandListener {
     }
 
     public List<Pair<String, Node>> search(String query) {
-        HashSet<String> queryTokens = new HashSet<>();
-        Set<Node> providers = null;
+        logger.info("SEARCH STARTED FOR - {}", query);
+        long startTime = System.currentTimeMillis();
+
+        HashMap<String, Set<Node>> queryTokensProviders = new HashMap<>();
         List<Pair<String, Node>> searchResults = new ArrayList<>();
         List<String> candidateFiles;
         Set<String> worldKeyset = masters.keySet();
         Set<String> myKeyset = resourceProviders.keySet();
-        String[] temp = query.trim().split("\\+s");
+        String[] temp = query.trim().split(" ");
         for (String t : temp) {
-            if (!worldKeyset.contains(t) && !myKeyset.contains(t)) //this is an alien key, we have no files on this key
-                return searchResults; //return empty result, without doing any network operations
-            queryTokens.add(t);
+            if (worldKeyset.contains(t) || myKeyset.contains(t)) //this is an alien key, we have no files on this key
+                queryTokensProviders.put(t, new HashSet<Node>());
         }
 
-        for (String queryToken : queryTokens) {
+        for (String queryToken : queryTokensProviders.keySet()) {
             if (resourceProviders.containsKey(queryToken)) { //i am the master for this word
-                providers = resourceProviders.get(queryToken);
+                queryTokensProviders.put(queryToken, resourceProviders.get(queryToken));
             } else if (masters.containsKey(queryToken)) {
                 try {
-                    providers = new HashSet<>(nodeOps.getProvidersForWord(queryToken, masters.get(queryToken)));
+                    HashSet<Node> providers = new HashSet<>(nodeOps.getProvidersForWord(queryToken, masters.get(queryToken)));
+                    queryTokensProviders.put(queryToken, providers);
                 } catch (CommunicationException e) {
                     e.printStackTrace();
                 }
-            } else { //this key is not in my current view of the network, hence return empty set
-                searchResults.clear();
-                return searchResults;
             }
-            if (providers != null) {
-                for (Node provider :
-                        providers) {
-                    candidateFiles = provider.getFiles();
-                    for (String file :
-                            candidateFiles) {
-                        if (containsAll(file, queryTokens))
-                            searchResults.add(new Pair(provider, file));
-                    }
+        }
+
+        if (!queryTokensProviders.isEmpty()) {
+            Iterator<String> iterator = queryTokensProviders.keySet().iterator();
+            String queryToken = iterator.next();
+            Set<Node> providers = queryTokensProviders.get(queryToken);
+
+            while (iterator.hasNext()) {
+                queryToken = iterator.next();
+                providers.retainAll(queryTokensProviders.get(queryToken));
+            }
+
+            for (Node provider :
+                    providers) {
+                candidateFiles = provider.getFiles();
+                for (String file :
+                        candidateFiles) {
+                    if (containsAll(file, queryTokensProviders.keySet()))
+                        searchResults.add(new Pair(provider, file));
                 }
             }
         }
+        logger.info("SEARCH ENDED {} - {}ms", query, System.currentTimeMillis() - startTime);
         return searchResults;
     }
 
