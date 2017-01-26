@@ -34,7 +34,7 @@ public class SearchNode implements CommandListener {
     private Node selfNode;//todo can't extend this class with Node due to RMI restrictions
 
     public SearchNode(String username, String myIp, int myPort, NodeOps nodeOps) throws SocketException, NullCommandListenerException, BootstrapException {
-        this.selfNode=new Node(myIp,myPort);
+        this.selfNode = new Node(myIp, myPort);
         this.selfNode.setUsername(username);
 
         this.neighbours = new HashSet<>();
@@ -75,6 +75,36 @@ public class SearchNode implements CommandListener {
 
     public void leave() throws CommunicationException {
         this.nodeOps.leave(neighbours);
+
+        //if leave OK transfer ownership if I am master
+        Iterator<String> iterator = resourceProviders.keySet().iterator();
+        while (iterator.hasNext()) {
+            String word = iterator.next();
+            Node newMaster = new ArrayList<>(neighbours).get(new Random().nextInt(neighbours.size()));
+            logger.info("Transferring ownership of {}", word);
+            try {
+                boolean transfered = this.nodeOps.transferResourceOwnership(
+                        word,
+                        newMaster,
+                        new ArrayList<>(this.resourceProviders.get(word))
+                );
+            } catch (CommunicationException e) {
+                e.printStackTrace();
+            }
+            //resourceProviders.remove(youNoMasterRequest.getWord());
+            //masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
+            try {
+                this.nodeOps.changeMasterBroadcast(
+                        word,
+                        this.selfNode,
+                        newMaster,
+                        this.neighbours
+                );
+            } catch (CommunicationException e) {//todo ugly try catch here
+                logger.error("Failed to transfer ownership of {}",word,e);
+            }
+        }
+
     }
 
     public void unregister() throws CommunicationException {

@@ -102,7 +102,22 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
 
     @Override
     public void leave(Set<Node> neighbours) throws CommunicationException {
-        super.leave(neighbours);
+        Exception ex = null;
+        for (Node neigh : neighbours) {
+            LeaveRequest leaveRequest = new LeaveRequest();
+            leaveRequest.setNode(selfNode);
+            CommandListener remoteNodeCommandListener = getRemoteNodeCommandListener(neigh);
+            try {
+                remoteNodeCommandListener.onLeaveRequest(leaveRequest);
+            } catch (RemoteException e) {
+                logger.error("Failed to notify leave to {}",neigh.toString());
+                //hiding exception to make loop continue
+                ex = e;
+            }
+        }
+        if (ex != null) {
+            throw new CommunicationException(ex);
+        }
     }
 
     @Override
