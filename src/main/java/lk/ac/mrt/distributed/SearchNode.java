@@ -33,6 +33,12 @@ public class SearchNode implements CommandListener {
 
     private Node selfNode;//todo can't extend this class with Node due to RMI restrictions
 
+    public void printNodeStats() {
+        System.out.println(String.format("Node has %d neighbours", neighbours.size()));
+        System.out.println(String.format("Node has knowledge about %d masters", masters.size()));
+        System.out.println(String.format("Node is master for %d words", resourceProviders.size()));
+    }
+
     public SearchNode(String username, String myIp, int myPort, NodeOps nodeOps) throws SocketException, NullCommandListenerException, BootstrapException {
         this.selfNode = new Node(myIp, myPort);
         this.selfNode.setUsername(username);
@@ -58,7 +64,9 @@ public class SearchNode implements CommandListener {
 
     public void bootstrap() throws SocketException, UnknownHostException, CommunicationException, RegistrationException {
         //register node
+        Statistics.INSTANCE.routingMessagesOut++;
         RegisterResponse registerResponse = nodeOps.register();
+        Statistics.INSTANCE.routingMessagesIn++;
         this.neighbours.addAll(registerResponse.getNodes());
         if (!this.neighbours.isEmpty()) {//let others know I am here
             this.nodeOps.join(this.neighbours);
@@ -69,6 +77,10 @@ public class SearchNode implements CommandListener {
             Map<String, Node> newMasters = this.nodeOps.askForMasters(neigh);
             this.mergeNewMasters(newMasters);
         }
+
+
+        Statistics.INSTANCE.routingMessagesOut += this.neighbours.size() * 2;//for join and master
+        Statistics.INSTANCE.routingMessagesIn += this.neighbours.size() * 2;
 
         this.processMyFiles();
     }
@@ -82,6 +94,7 @@ public class SearchNode implements CommandListener {
                 leaveNotifiers.add(this.masters.get(token));
             }
         }
+        Statistics.INSTANCE.routingMessagesOut += leaveNotifiers.size();
 
         this.nodeOps.leave(leaveNotifiers);//notify neighbours and masters
 
@@ -95,7 +108,7 @@ public class SearchNode implements CommandListener {
                 try {
                     ArrayList<Node> nodes = new ArrayList<>(this.resourceProviders.get(word));
                     nodes.remove(this.getSelfNode());//remove me
-
+                    Statistics.INSTANCE.routingMessagesOut++;
                     boolean transfered = this.nodeOps.transferResourceOwnership(
                             word,
                             newMaster,
@@ -107,6 +120,7 @@ public class SearchNode implements CommandListener {
                 //resourceProviders.remove(youNoMasterRequest.getWord());
                 //masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
                 try {
+                    Statistics.INSTANCE.routingMessagesOut+=this.neighbours.size();
                     this.nodeOps.changeMasterBroadcast(
                             word,
                             this.selfNode,
@@ -122,7 +136,9 @@ public class SearchNode implements CommandListener {
     }
 
     public void unregister() throws CommunicationException {
+        Statistics.INSTANCE.routingMessagesOut++;
         this.nodeOps.unregister();
+        Statistics.INSTANCE.routingMessagesIn++;//UNREGOK or return
     }
 
     public void join() throws CommunicationException {
@@ -196,6 +212,8 @@ public class SearchNode implements CommandListener {
 
     @Override
     public int onLeaveRequest(LeaveRequest leaveRequest) {
+        Statistics.INSTANCE.routingMessagesIn++;
+        Statistics.INSTANCE.routingMessagesOut++;
         logger.info("Leave request received for {}", leaveRequest.getNode());
         Node node = leaveRequest.getNode();
         if (node != null) {
@@ -204,8 +222,8 @@ public class SearchNode implements CommandListener {
             //also leave if I have record as this node is a resource provider
             Iterator<String> iterator = this.resourceProviders.keySet().iterator();
             while (iterator.hasNext()) {
-                String token=iterator.next();
-                logger.debug("Checking token {} | {}",token,this.resourceProviders.get(token).toString());
+                String token = iterator.next();
+                logger.debug("Checking token {} | {}", token, this.resourceProviders.get(token).toString());
                 this.resourceProviders.get(token).remove(leaveRequest.getNode());
             }
             return 0;
@@ -217,6 +235,8 @@ public class SearchNode implements CommandListener {
 
     @Override
     public int onJoinRequest(JoinRequest joinRequest) {
+        Statistics.INSTANCE.routingMessagesIn++;
+        Statistics.INSTANCE.routingMessagesOut++;
         Node node = joinRequest.getNode();
         if (node != null) {
             this.neighbours.add(node);
@@ -227,6 +247,7 @@ public class SearchNode implements CommandListener {
 
     @Override
     public void onMasterBroadcast(MasterBroadcast masterBroadcast) {
+        Statistics.INSTANCE.routingMessagesIn++;
         Node node = masterBroadcast.getNode();
         List<String> words = masterBroadcast.getWordsList();
         for (String word : words) {
@@ -239,6 +260,7 @@ public class SearchNode implements CommandListener {
                                     new YouNoMasterRequest(word, node);
                             this.onYouNoMasterRequest(youNoMasterRequest);
                         } else {
+                            Statistics.INSTANCE.routingMessagesOut++;
                             nodeOps.letFalseMasterKnow(word, existingMasterNode, node);
                         }
                     } catch (CommunicationException e) {//todo ugly try catch
@@ -251,6 +273,7 @@ public class SearchNode implements CommandListener {
         }
         //send the news to all neighbours
         try {
+            Statistics.INSTANCE.routingMessagesOut+=this.neighbours.size();
             this.nodeOps.broadcast(masterBroadcast, this.neighbours);
         } catch (CommunicationException e) {//todo ugly try catch here
             e.printStackTrace();
@@ -259,6 +282,7 @@ public class SearchNode implements CommandListener {
 
     @Override
     public void onMasterChangeBroadcast(MasterChangeBroadcast masterChangeBroadcast) {
+        Statistics.INSTANCE.routingMessagesIn++;
         String word = masterChangeBroadcast.getWord();
         Node newMaster = masterChangeBroadcast.getNewMaster();
         Node oldMaster = masterChangeBroadcast.getOldMaster();
@@ -268,6 +292,7 @@ public class SearchNode implements CommandListener {
         }
         masters.put(word, newMaster);//just replace the master
         try {
+            Statistics.INSTANCE.routingMessagesOut+=this.neighbours.size();
             this.nodeOps.broadcast(masterChangeBroadcast, this.neighbours);
         } catch (CommunicationException e) {//todo ugly try catch
             e.printStackTrace();
@@ -276,12 +301,14 @@ public class SearchNode implements CommandListener {
 
     @Override
     public void onYouNoMasterRequest(YouNoMasterRequest youNoMasterRequest) {
+        Statistics.INSTANCE.routingMessagesIn++;
         if (youNoMasterRequest.getNewMaster().equals(this)) {
             System.out.println("SHIT HAS HAPPENED");
             return;
         }
         //sending my resources to new master
         try {
+            Statistics.INSTANCE.routingMessagesOut++;
             boolean transfered = this.nodeOps.transferResourceOwnership(
                     youNoMasterRequest.getWord(),
                     youNoMasterRequest.getNewMaster(),
@@ -293,6 +320,7 @@ public class SearchNode implements CommandListener {
         resourceProviders.remove(youNoMasterRequest.getWord());
         masters.put(youNoMasterRequest.getWord(), youNoMasterRequest.getNewMaster());
         try {
+            Statistics.INSTANCE.routingMessagesOut+=this.neighbours.size();
             this.nodeOps.changeMasterBroadcast(
                     youNoMasterRequest.getWord(),
                     this.selfNode,
@@ -306,6 +334,8 @@ public class SearchNode implements CommandListener {
 
     @Override
     public Map<String, Node> onMasterWhoRequest(MasterWhoRequest masterWhoRequest) {
+        Statistics.INSTANCE.routingMessagesIn++;
+        Statistics.INSTANCE.routingMessagesOut++;
         return this.masters;/*
         Node askingNode = masterWhoRequest.getNode();
         try {
@@ -317,6 +347,8 @@ public class SearchNode implements CommandListener {
 
     @Override
     public List<Node> onProvidersRequest(ProvidersRequest providersRequest) {
+        Statistics.INSTANCE.queryMessagesIn++;
+        Statistics.INSTANCE.queryMessagesOut++;
         String word = providersRequest.getWord();
         Set<Node> providers = this.resourceProviders.get(word);
         if (providers == null) {
@@ -328,6 +360,8 @@ public class SearchNode implements CommandListener {
 
     @Override
     public void onTakeMyGemsRequest(TakeMyGemsRequest takeMyGemsRequest) {
+        Statistics.INSTANCE.routingMessagesIn++;
+        Statistics.INSTANCE.routingMessagesOut++;
         String word = takeMyGemsRequest.getWord();
         List<Node> providers = takeMyGemsRequest.getProviders();
         Set<Node> nodes = this.resourceProviders.get(word);
@@ -340,6 +374,8 @@ public class SearchNode implements CommandListener {
 
     @Override
     public void onIHaveRequest(IHaveRequest iHaveRequest) {
+        Statistics.INSTANCE.routingMessagesIn++;
+        Statistics.INSTANCE.routingMessagesOut++;
         String word = iHaveRequest.getWord();
         Node node = iHaveRequest.getNode();
         List<String> fileNames = iHaveRequest.getFileNames();
@@ -355,6 +391,7 @@ public class SearchNode implements CommandListener {
     public List<Pair<String, Node>> search(String query) {
         logger.info("SEARCH STARTED FOR - {}", query);
         long startTime = System.currentTimeMillis();
+        int hopCounter = 0;
 
         HashMap<String, Set<Node>> queryTokensProviders = new HashMap<>();
         List<Pair<String, Node>> searchResults = new ArrayList<>();
@@ -369,13 +406,14 @@ public class SearchNode implements CommandListener {
 
         for (String queryToken : queryTokensProviders.keySet()) {
             if (resourceProviders.containsKey(queryToken)) { //i am the master for this word
-                logger.debug("This node is the master for {}",queryToken);
+                logger.debug("This node is the master for {}", queryToken);
                 queryTokensProviders.put(queryToken, resourceProviders.get(queryToken));
             } else if (masters.containsKey(queryToken)) {
                 try {
-                    logger.debug("Requesting providers for {} from {}",queryToken,masters.get(queryToken));
+                    logger.debug("Requesting providers for {} from {}", queryToken, masters.get(queryToken));
                     HashSet<Node> providers = new HashSet<>(nodeOps.getProvidersForWord(queryToken, masters.get(queryToken)));
                     queryTokensProviders.put(queryToken, providers);
+                    hopCounter++;
                 } catch (CommunicationException e) {
                     e.printStackTrace();
                 }
@@ -402,7 +440,7 @@ public class SearchNode implements CommandListener {
                 }
             }
         }
-        logger.info("SEARCH ENDED {} - {}ms", query, System.currentTimeMillis() - startTime);
+        logger.info("SEARCH ENDED {} - {}ms & {} hops", query, System.currentTimeMillis() - startTime, hopCounter);
         return searchResults;
     }
 

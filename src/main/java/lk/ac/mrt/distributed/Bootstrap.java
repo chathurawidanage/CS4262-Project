@@ -29,9 +29,9 @@ public class Bootstrap {
         String bootServerIP = "10.0.0.3";
         int bootServerPort = 55555;
         boolean useGUI = true;
-        String username = "chath12";
+        String username = "chath6";
         String myIP = "10.0.0.3";
-        int myPort = 44448;
+        int myPort = 44446;
 
         NodeOps nodeOps;
         Console console;

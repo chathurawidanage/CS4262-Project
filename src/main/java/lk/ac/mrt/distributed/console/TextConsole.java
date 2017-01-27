@@ -2,6 +2,7 @@ package lk.ac.mrt.distributed.console;
 
 import javafx.util.Pair;
 import lk.ac.mrt.distributed.SearchNode;
+import lk.ac.mrt.distributed.Statistics;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 
@@ -17,7 +18,7 @@ public class TextConsole extends Console {
     public TextConsole(SearchNode mynode) {
         super(mynode);
         nodeHandle = mynode.getSelfNode().getUsername() + "@" + mynode.getSelfNode().getIp() + ":" +
-        mynode.getSelfNode().getPort();
+                mynode.getSelfNode().getPort();
     }
 
     @Override
@@ -34,7 +35,10 @@ public class TextConsole extends Console {
         System.out.println("search <query> - queries the system for a file\n" +
                 "exit - shuts down the node and exits the console\n" +
                 "leave - makes node leave the network\n" +
-                "unreg - makes the node unregister the network\n"
+                "unreg - makes the node unregister the network\n" +
+                "stats - show statistics\n" +
+                "clrsr - clear statistics of routing\n" +
+                "clrsq - clear statistics of query\n"
         );
         while (true) {
             System.out.print(nodeHandle + " $ ");
@@ -85,6 +89,13 @@ public class TextConsole extends Console {
                     e.printStackTrace();
                     System.out.println();
                 }
+            } else if (command.startsWith("stats")) {
+                Statistics.INSTANCE.print();
+                mynode.printNodeStats();
+            } else if (command.startsWith("clrsr")) {
+                Statistics.INSTANCE.resetRouting();
+            } else if (command.startsWith("clrsq")) {
+                Statistics.INSTANCE.resetQuery();
             }
         }
     }
