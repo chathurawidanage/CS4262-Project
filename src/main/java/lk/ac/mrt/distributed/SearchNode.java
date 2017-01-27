@@ -74,11 +74,11 @@ public class SearchNode implements CommandListener {
     }
 
     public void leave() throws CommunicationException {
-        Set<Node> leaveNotifiers=new HashSet<>(neighbours);
+        Set<Node> leaveNotifiers = new HashSet<>(neighbours);
         List<String> files = this.selfNode.getFiles();
-        for(String file:files){
+        for (String file : files) {
             String[] split = file.split("_");
-            for(String token:split){
+            for (String token : split) {
                 leaveNotifiers.add(this.masters.get(token));
             }
         }
@@ -94,7 +94,7 @@ public class SearchNode implements CommandListener {
                 logger.info("Transferring ownership of {}", word);
                 try {
                     ArrayList<Node> nodes = new ArrayList<>(this.resourceProviders.get(word));
-                    nodes.remove(this);//remove me
+                    nodes.remove(this.getSelfNode());//remove me
 
                     boolean transfered = this.nodeOps.transferResourceOwnership(
                             word,
@@ -196,6 +196,7 @@ public class SearchNode implements CommandListener {
 
     @Override
     public int onLeaveRequest(LeaveRequest leaveRequest) {
+        logger.info("Leave request received for {}", leaveRequest.getNode());
         Node node = leaveRequest.getNode();
         if (node != null) {
             this.neighbours.remove(leaveRequest.getNode());
@@ -203,7 +204,9 @@ public class SearchNode implements CommandListener {
             //also leave if I have record as this node is a resource provider
             Iterator<String> iterator = this.resourceProviders.keySet().iterator();
             while (iterator.hasNext()) {
-                this.resourceProviders.get(iterator.next()).remove(leaveRequest.getNode());
+                String token=iterator.next();
+                logger.debug("Checking token {} | {}",token,this.resourceProviders.get(token).toString());
+                this.resourceProviders.get(token).remove(leaveRequest.getNode());
             }
             return 0;
         } else {//rare case
@@ -366,9 +369,11 @@ public class SearchNode implements CommandListener {
 
         for (String queryToken : queryTokensProviders.keySet()) {
             if (resourceProviders.containsKey(queryToken)) { //i am the master for this word
+                logger.debug("This node is the master for {}",queryToken);
                 queryTokensProviders.put(queryToken, resourceProviders.get(queryToken));
             } else if (masters.containsKey(queryToken)) {
                 try {
+                    logger.debug("Requesting providers for {} from {}",queryToken,masters.get(queryToken));
                     HashSet<Node> providers = new HashSet<>(nodeOps.getProvidersForWord(queryToken, masters.get(queryToken)));
                     queryTokensProviders.put(queryToken, providers);
                 } catch (CommunicationException e) {
