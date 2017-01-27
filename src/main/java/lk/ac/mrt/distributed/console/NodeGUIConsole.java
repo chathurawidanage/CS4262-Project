@@ -112,7 +112,7 @@ public class NodeGUIConsole extends Console{
                 btnSearch.setEnabled(false);
                 logger.info("Search invoked query: " + txtSearch.getText());
                 btnSearch.setName("SEARCHING");
-                populateSearchResult(search(txtSearch.getText().trim()));
+                populateSearchResult(search(txtSearch.getText().trim()).results);
                 btnSearch.setEnabled(true);
                 btnSearch.setName("SEARCH");
                 txtSearch.selectAll();

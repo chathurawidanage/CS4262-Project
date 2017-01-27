@@ -2,6 +2,7 @@ package lk.ac.mrt.distributed.console;
 
 import javafx.util.Pair;
 import lk.ac.mrt.distributed.SearchNode;
+import lk.ac.mrt.distributed.SearchResult;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 
@@ -15,7 +16,7 @@ public abstract class Console {
     public Console(SearchNode mynode) {
         this.mynode = mynode;
     }
-    List<Pair<String, Node>> search(String query) {
+    SearchResult search(String query) {
         return mynode.search(query.trim());
     }
     void leave() throws CommunicationException {

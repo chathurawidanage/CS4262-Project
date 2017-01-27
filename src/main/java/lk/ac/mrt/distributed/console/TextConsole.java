@@ -2,6 +2,7 @@ package lk.ac.mrt.distributed.console;
 
 import javafx.util.Pair;
 import lk.ac.mrt.distributed.SearchNode;
+import lk.ac.mrt.distributed.SearchResult;
 import lk.ac.mrt.distributed.Statistics;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
@@ -39,7 +40,7 @@ public class TextConsole extends Console {
                 "unreg - makes the node unregister the network\n" +
                 "stats - show statistics\n" +
                 "clrsr - clear statistics of routing\n" +
-                "clrsq - clear statistics of query\n"+
+                "clrsq - clear statistics of query\n" +
                 "auto - auto serach predefined set of queries\n"
         );
         while (true) {
@@ -61,8 +62,8 @@ public class TextConsole extends Console {
                 }
                 System.out.println();
             } else if (command.startsWith("search ")) {
-
-                List<Pair<String, Node>> results = search(command.substring("search ".length()));
+                SearchResult searchResult = search(command.substring("search ".length()));
+                List<Pair<String, Node>> results = searchResult.results;
                 System.out.println(results.size() + " matche(s) found in " + (System.currentTimeMillis() - starttime)
                         + " ms\n");
                 for (Pair<String, Node> result :
@@ -98,8 +99,8 @@ public class TextConsole extends Console {
                 Statistics.INSTANCE.resetRouting();
             } else if (command.startsWith("clrsq")) {
                 Statistics.INSTANCE.resetQuery();
-            }else if(command.startsWith("auto")){
-                String queries[]={"Twilight",
+            } else if (command.startsWith("auto")) {
+                String queries[] = {"Twilight",
                         "Jack",
                         "American Idol",
                         "Happy Feet",
@@ -149,22 +150,24 @@ public class TextConsole extends Console {
                         "Twilight",
                         "Hacking",
                         "King"};
-                ArrayList<String> resultsList=new ArrayList<>();
-                for(String query:queries) {
-                    List<Pair<String, Node>> results = search(query.toLowerCase());
-                    resultsList.add("-----------------");
-                    resultsList.add(query);
-                    resultsList.add(results.size() + " matche(s) found in " + (System.currentTimeMillis() - starttime)
-                            + " ms");
+                ArrayList<String> resultsList = new ArrayList<>();
+                for (String query : queries) {
+                    starttime = System.currentTimeMillis();
+                    SearchResult searchResult = search(query.toLowerCase());
+                    List<Pair<String, Node>> results = searchResult.results;
+                    String row = query.replace(" ", "_") + ",";
+                    row += results.size() + "," + searchResult.time + "," + searchResult.hops;
+                    /*resultsList.add(results.size() + " matche(s) found in " + (System.currentTimeMillis() - starttime)
+                            + " ms" + " " + searchResult.hops + " hops");
                     for (Pair<String, Node> result :
                             results) {
                         Object filenam = result.getValue();
                         Object nodeaddrr = result.getKey();
                         resultsList.add(nodeaddrr + "\t\t" + filenam);
-                    }
-                    resultsList.add("-----------------");
+                    }*/
+                    resultsList.add(row);
                 }
-                for(String line:resultsList){
+                for (String line : resultsList) {
                     System.out.println(line);
                 }
             }

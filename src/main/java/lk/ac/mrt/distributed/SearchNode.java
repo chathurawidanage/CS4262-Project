@@ -388,7 +388,7 @@ public class SearchNode implements CommandListener {
         nodes.add(node);
     }
 
-    public List<Pair<String, Node>> search(String query) {
+    public SearchResult search(String query) {
         logger.info("SEARCH STARTED FOR - {}", query);
         long startTime = System.currentTimeMillis();
         int hopCounter = 0;
@@ -441,7 +441,11 @@ public class SearchNode implements CommandListener {
             }
         }
         logger.info("SEARCH ENDED {} - {}ms & {} hops", query, System.currentTimeMillis() - startTime, hopCounter);
-        return searchResults;
+        SearchResult results=new SearchResult();
+        results.results=searchResults;
+        results.hops=hopCounter;
+        results.time=System.currentTimeMillis() - startTime;
+        return results;
     }
 
     private boolean containsAll(String haystack, Collection<String> needles) {
