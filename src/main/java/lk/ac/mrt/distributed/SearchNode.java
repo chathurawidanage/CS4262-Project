@@ -411,8 +411,10 @@ public class SearchNode implements CommandListener {
             } else if (masters.containsKey(queryToken)) {
                 try {
                     logger.debug("Requesting providers for {} from {}", queryToken, masters.get(queryToken));
+                    Statistics.INSTANCE.queryMessagesOut++;
                     HashSet<Node> providers = new HashSet<>(nodeOps.getProvidersForWord(queryToken, masters.get(queryToken)));
                     queryTokensProviders.put(queryToken, providers);
+                    Statistics.INSTANCE.queryMessagesIn++;
                     hopCounter++;
                 } catch (CommunicationException e) {
                     e.printStackTrace();
