@@ -6,6 +6,7 @@ import lk.ac.mrt.distributed.Statistics;
 import lk.ac.mrt.distributed.api.Node;
 import lk.ac.mrt.distributed.api.exceptions.CommunicationException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -38,7 +39,8 @@ public class TextConsole extends Console {
                 "unreg - makes the node unregister the network\n" +
                 "stats - show statistics\n" +
                 "clrsr - clear statistics of routing\n" +
-                "clrsq - clear statistics of query\n"
+                "clrsq - clear statistics of query\n"+
+                "auto - auto serach predefined set of queries\n"
         );
         while (true) {
             System.out.print(nodeHandle + " $ ");
@@ -96,6 +98,75 @@ public class TextConsole extends Console {
                 Statistics.INSTANCE.resetRouting();
             } else if (command.startsWith("clrsq")) {
                 Statistics.INSTANCE.resetQuery();
+            }else if(command.startsWith("auto")){
+                String queries[]={"Twilight",
+                        "Jack",
+                        "American Idol",
+                        "Happy Feet",
+                        "Twilight saga",
+                        "Happy Feet",
+                        "Happy Feet",
+                        "Feet",
+                        "Happy Feet",
+                        "Twilight",
+                        "Windows",
+                        "Happy Feet",
+                        "Mission Impossible",
+                        "Twilight",
+                        "Windows 8",
+                        "The",
+                        "Happy",
+                        "Windows 8",
+                        "Happy Feet",
+                        "Super Mario",
+                        "Jack and Jill",
+                        "Happy Feet",
+                        "Impossible",
+                        "Happy Feet",
+                        "Turn Up The Music",
+                        "Adventures of Tintin",
+                        "Twilight saga",
+                        "Happy Feet",
+                        "Super Mario",
+                        "American Pickers",
+                        "Microsoft Office 2010",
+                        "Twilight",
+                        "Modern Family",
+                        "Jack and Jill",
+                        "Jill",
+                        "Glee",
+                        "The Vampire Diarie",
+                        "King Arthur",
+                        "Jack and Jill",
+                        "King Arthur",
+                        "Windows XP",
+                        "Harry Potter",
+                        "Feet",
+                        "Kung Fu Panda",
+                        "Lady Gaga",
+                        "Gaga",
+                        "Happy Feet",
+                        "Twilight",
+                        "Hacking",
+                        "King"};
+                ArrayList<String> resultsList=new ArrayList<>();
+                for(String query:queries) {
+                    List<Pair<String, Node>> results = search(query.toLowerCase());
+                    resultsList.add("-----------------");
+                    resultsList.add(query);
+                    resultsList.add(results.size() + " matche(s) found in " + (System.currentTimeMillis() - starttime)
+                            + " ms");
+                    for (Pair<String, Node> result :
+                            results) {
+                        Object filenam = result.getValue();
+                        Object nodeaddrr = result.getKey();
+                        resultsList.add(nodeaddrr + "\t\t" + filenam);
+                    }
+                    resultsList.add("-----------------");
+                }
+                for(String line:resultsList){
+                    System.out.println(line);
+                }
             }
         }
     }
