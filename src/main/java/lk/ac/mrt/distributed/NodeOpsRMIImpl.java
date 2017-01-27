@@ -57,6 +57,9 @@ public class NodeOpsRMIImpl extends NodeOpsUDPImpl {
         this.udpThread.stop();
         this.socket.close();
         logger.debug("UDP sockets closed");
+        while(!this.socket.isClosed()){
+            logger.debug("Waiting till UDP port closed");
+        }
 
         try {
             logger.debug("Creating RMI registry");
